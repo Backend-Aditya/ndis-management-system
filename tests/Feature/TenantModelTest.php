@@ -20,3 +20,17 @@ it('tenant has many users', function () {
 
     expect($tenant->users)->toHaveCount(3);
 });
+
+it('HasTenant global scope filters by current tenant', function () {
+    $tenantA = Tenant::factory()->create();
+    $tenantB = Tenant::factory()->create();
+
+    app()->instance('tenant', $tenantA);
+
+    // Create one user per tenant
+    User::factory()->create(['tenant_id' => $tenantA->id]);
+    User::factory()->create(['tenant_id' => $tenantB->id]);
+
+    // HasTenant scope should only see tenantA's user
+    expect(User::count())->toBe(1);
+});
