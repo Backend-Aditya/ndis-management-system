@@ -52,3 +52,58 @@ export interface PaginatedResource<T> {
     data: T[];
     meta: PaginationMeta;
 }
+
+export interface Participant {
+    id: string;
+    ndis_number: string;
+    first_name: string;
+    last_name: string;
+    full_name: string;
+    date_of_birth: string | null;
+    gender: string | null;
+    pronouns: string | null;
+    address: string | null;
+    suburb: string | null;
+    state: string | null;
+    postcode: string | null;
+    primary_language: string | null;
+    interpreter_required: boolean;
+    communication_needs: string | null;
+    cultural_background: string | null;
+    participant_status: 'active' | 'inactive' | 'pending';
+    created_at: string;
+    contacts?: ParticipantContact[];
+    goals?: ParticipantGoal[];
+    diagnoses?: ParticipantDiagnosis[];
+}
+
+export interface ParticipantContact {
+    id: string;
+    participant_id: string;
+    relationship: string | null;
+    first_name: string;
+    last_name: string;
+    phone: string | null;
+    email: string | null;
+    is_emergency: boolean;
+    is_authorised_rep: boolean;
+}
+
+export interface ParticipantGoal {
+    id: string;
+    participant_id: string;
+    goal_text: string;
+    category: string | null;
+    status: 'active' | 'completed' | 'on_hold';
+    target_date: string | null;
+    progress_notes: string | null;
+}
+
+export interface ParticipantDiagnosis {
+    id: string;
+    participant_id: string;
+    diagnosis_name: string;
+    icd_10_code: string | null;
+    diagnosed_date: string | null;
+    is_primary: boolean;
+}
