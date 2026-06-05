@@ -21,7 +21,7 @@ class UserResource extends JsonResource
             'is_active' => $this->is_active,
             'last_login_at' => $this->last_login_at?->toISOString(),
             'roles' => $this->getRoleNames(),
-            'avatar_url' => $this->getFirstMediaUrl('avatar'),
+            'avatar_url' => $this->getFirstMedia('avatar')?->getUrl() ?? null,
             'tenant_id' => $this->tenant_id,
         ];
     }
