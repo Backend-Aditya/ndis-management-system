@@ -1,0 +1,328 @@
+
+<h2 class="sr-only">All NDIS database tables — searchable reference grouped by domain</h2>
+<style>
+* { box-sizing: border-box; }
+.search-wrap { display:flex; align-items:center; gap:8px; margin-bottom:1rem; }
+.search-wrap i { font-size:16px; color:var(--color-text-tertiary); }
+#search { flex:1; }
+.stats { font-size:12px; color:var(--color-text-tertiary); white-space:nowrap; }
+.domain-section { margin-bottom:1.5rem; }
+.domain-header {
+  display:flex; align-items:center; gap:8px;
+  padding:6px 10px; border-radius:var(--border-radius-md);
+  margin-bottom:6px; cursor:pointer; user-select:none;
+}
+.domain-header i { font-size:15px; }
+.domain-title { font-size:13px; font-weight:500; flex:1; }
+.domain-count { font-size:11px; opacity:.7; }
+.domain-chevron { font-size:12px; transition:transform .2s; }
+.domain-section.collapsed .domain-chevron { transform:rotate(-90deg); }
+.domain-section.collapsed .tables-grid { display:none; }
+.tables-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(190px,1fr));
+  gap:6px;
+  padding:2px 0 4px;
+}
+.table-card {
+  background:var(--color-background-primary);
+  border:0.5px solid var(--color-border-tertiary);
+  border-radius:var(--border-radius-md);
+  padding:8px 10px;
+  cursor:pointer;
+  transition:border-color .15s, background .15s;
+}
+.table-card:hover { border-color:var(--color-border-secondary); background:var(--color-background-secondary); }
+.table-card.hidden { display:none; }
+.table-name { font-size:12px; font-weight:500; color:var(--color-text-primary); font-family:var(--font-mono); }
+.table-cols { font-size:11px; color:var(--color-text-tertiary); margin-top:2px; }
+.table-desc { font-size:11px; color:var(--color-text-secondary); margin-top:3px; line-height:1.4; }
+.no-results { font-size:13px; color:var(--color-text-tertiary); padding:2rem 0; text-align:center; }
+.key-badge {
+  display:inline-block; font-size:9px; font-weight:500;
+  padding:1px 4px; border-radius:3px; margin-left:4px;
+  vertical-align:middle; font-family:var(--font-mono);
+}
+.pk { background:#E1F5EE; color:#085041; }
+.fk { background:#EEEDFE; color:#3C3489; }
+.cols-detail { margin-top:6px; }
+.col-row { display:flex; align-items:baseline; gap:4px; padding:2px 0; border-bottom:0.5px solid var(--color-border-tertiary); font-size:11px; }
+.col-row:last-child { border-bottom:none; }
+.col-name { font-family:var(--font-mono); color:var(--color-text-primary); font-size:11px; flex:1; }
+.col-type { color:var(--color-text-tertiary); font-size:10px; }
+.expanded .cols-detail { display:block; }
+.collapsed-card .cols-detail { display:none; }
+</style>
+
+<div class="search-wrap">
+  <i class="ti ti-search" aria-hidden="true"></i>
+  <input id="search" type="text" placeholder="Search tables or columns…" oninput="doSearch(this.value)" style="font-size:13px;">
+  <span class="stats" id="stats">63 tables</span>
+</div>
+
+<div id="domains"></div>
+<div class="no-results" id="no-results" style="display:none">No tables match your search.</div>
+
+<script>
+const DOMAINS = [
+  {
+    key:'tenancy', label:'Tenancy', icon:'ti-building-skyscraper',
+    color:{bg:'#EEEDFE',txt:'#3C3489'},
+    tables:[
+      {name:'tenants', cols:12, desc:'Root org record — ABN, NDIS provider number, plan, settings', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'name',t:'string'},{n:'slug',t:'string'},{n:'plan',t:'string'},{n:'status',t:'string'},{n:'abn',t:'string'},{n:'ndis_provider_number',t:'string'},{n:'contact_email',t:'string'},{n:'contact_phone',t:'string'},{n:'settings',t:'jsonb'},{n:'trial_ends_at',t:'timestamp'},{n:'created_at',t:'timestamp'}
+      ]},
+      {name:'tenant_subscriptions', cols:9, desc:'Stripe billing, seat count, plan cycle', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'tenant_id',t:'uuid',k:'FK'},{n:'stripe_subscription_id',t:'string'},{n:'plan_name',t:'string'},{n:'billing_cycle',t:'string'},{n:'seat_count',t:'int'},{n:'monthly_amount',t:'decimal'},{n:'current_period_end',t:'timestamp'},{n:'status',t:'string'}
+      ]},
+    ]
+  },
+  {
+    key:'users', label:'Users & Roles', icon:'ti-users',
+    color:{bg:'#E1F5EE',txt:'#085041'},
+    tables:[
+      {name:'users', cols:10, desc:'Auth accounts across all roles (staff, managers, directors)', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'tenant_id',t:'uuid',k:'FK'},{n:'email',t:'string'},{n:'password_hash',t:'string'},{n:'first_name',t:'string'},{n:'last_name',t:'string'},{n:'phone',t:'string'},{n:'avatar_url',t:'string'},{n:'is_active',t:'boolean'},{n:'last_login_at',t:'timestamp'}
+      ]},
+      {name:'roles', cols:6, desc:'System + custom roles per tenant (Director, Manager, Worker…)', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'tenant_id',t:'uuid',k:'FK'},{n:'name',t:'string'},{n:'slug',t:'string'},{n:'description',t:'text'},{n:'is_system',t:'boolean'}
+      ]},
+      {name:'permissions', cols:3, desc:'Granular resource/action pairs', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'resource',t:'string'},{n:'action',t:'string'},{n:'description',t:'text'}
+      ]},
+      {name:'role_permissions', cols:2, desc:'Role ↔ permission pivot', fields:[
+        {n:'role_id',t:'uuid',k:'FK'},{n:'permission_id',t:'uuid',k:'FK'}
+      ]},
+      {name:'user_roles', cols:3, desc:'Assign roles to users', fields:[
+        {n:'user_id',t:'uuid',k:'FK'},{n:'role_id',t:'uuid',k:'FK'},{n:'assigned_at',t:'timestamp'}
+      ]},
+      {name:'staff_profiles', cols:14, desc:'Employment, pay rates, bank details, emergency contacts', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'user_id',t:'uuid',k:'FK'},{n:'tenant_id',t:'uuid',k:'FK'},{n:'employee_number',t:'string'},{n:'position',t:'string'},{n:'department',t:'string'},{n:'employment_start',t:'date'},{n:'employment_end',t:'date'},{n:'employment_type',t:'string'},{n:'hourly_rate',t:'decimal'},{n:'kms_rate',t:'decimal'},{n:'tax_file_number',t:'string'},{n:'bank_bsb',t:'string'},{n:'bank_account',t:'string'}
+      ]},
+      {name:'staff_qualifications', cols:7, desc:'NDIS Worker Screening, First Aid, certs with expiry alerts', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'staff_id',t:'uuid',k:'FK'},{n:'qualification_name',t:'string'},{n:'issuing_body',t:'string'},{n:'issue_date',t:'date'},{n:'expiry_date',t:'date'},{n:'status',t:'string'}
+      ]},
+      {name:'staff_availability', cols:8, desc:'Recurring or ad-hoc availability windows per staff member', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'staff_id',t:'uuid',k:'FK'},{n:'day_of_week',t:'int'},{n:'start_time',t:'time'},{n:'end_time',t:'time'},{n:'is_recurring',t:'boolean'},{n:'effective_from',t:'date'},{n:'effective_to',t:'date'}
+      ]},
+    ]
+  },
+  {
+    key:'participants', label:'Participants', icon:'ti-wheelchair',
+    color:{bg:'#FAECE7',txt:'#712B13'},
+    tables:[
+      {name:'participants', cols:18, desc:'Core client record — NDIS number, demographics, comms needs', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'tenant_id',t:'uuid',k:'FK'},{n:'ndis_number',t:'string'},{n:'first_name',t:'string'},{n:'last_name',t:'string'},{n:'date_of_birth',t:'date'},{n:'gender',t:'string'},{n:'pronouns',t:'string'},{n:'address',t:'text'},{n:'suburb',t:'string'},{n:'state',t:'string'},{n:'postcode',t:'string'},{n:'primary_language',t:'string'},{n:'interpreter_required',t:'boolean'},{n:'communication_needs',t:'string'},{n:'cultural_background',t:'string'},{n:'participant_status',t:'string'},{n:'created_at',t:'timestamp'}
+      ]},
+      {name:'participant_contacts', cols:9, desc:'Nominees, authorised reps, emergency contacts', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'participant_id',t:'uuid',k:'FK'},{n:'relationship',t:'string'},{n:'first_name',t:'string'},{n:'last_name',t:'string'},{n:'phone',t:'string'},{n:'email',t:'string'},{n:'is_emergency',t:'boolean'},{n:'is_authorised_rep',t:'boolean'}
+      ]},
+      {name:'participant_goals', cols:7, desc:'NDIS goals with category, status, and progress notes', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'participant_id',t:'uuid',k:'FK'},{n:'goal_text',t:'text'},{n:'category',t:'string'},{n:'status',t:'string'},{n:'target_date',t:'date'},{n:'progress_notes',t:'text'}
+      ]},
+      {name:'participant_diagnoses', cols:6, desc:'ICD-10 diagnoses linked to participant', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'participant_id',t:'uuid',k:'FK'},{n:'diagnosis_name',t:'string'},{n:'icd_10_code',t:'string'},{n:'diagnosed_date',t:'date'},{n:'is_primary',t:'boolean'}
+      ]},
+      {name:'participant_documents', cols:8, desc:'Plans, assessments, consent forms with expiry tracking', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'participant_id',t:'uuid',k:'FK'},{n:'uploaded_by',t:'uuid',k:'FK'},{n:'document_type',t:'string'},{n:'file_name',t:'string'},{n:'file_url',t:'string'},{n:'expiry_date',t:'date'},{n:'uploaded_at',t:'timestamp'}
+      ]},
+      {name:'support_coordinators', cols:5, desc:'Staff assigned as support coordinators per participant', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'participant_id',t:'uuid',k:'FK'},{n:'staff_id',t:'uuid',k:'FK'},{n:'assigned_from',t:'date'},{n:'is_active',t:'boolean'}
+      ]},
+    ]
+  },
+  {
+    key:'plans', label:'Plans & Funding', icon:'ti-report-money',
+    color:{bg:'#E6F1FB',txt:'#0C447C'},
+    tables:[
+      {name:'ndis_plans', cols:14, desc:'Plan dates, management type, core/capacity/capital budgets', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'participant_id',t:'uuid',k:'FK'},{n:'plan_number',t:'string'},{n:'plan_start_date',t:'date'},{n:'plan_end_date',t:'date'},{n:'plan_type',t:'string'},{n:'management_type',t:'string'},{n:'core_total',t:'decimal'},{n:'capacity_total',t:'decimal'},{n:'capital_total',t:'decimal'},{n:'total_funding',t:'decimal'},{n:'status',t:'string'},{n:'ndia_contact_name',t:'string'},{n:'ndia_contact_phone',t:'string'}
+      ]},
+      {name:'plan_support_categories', cols:6, desc:'Funding bucket per support purpose with spend tracking', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'plan_id',t:'uuid',k:'FK'},{n:'support_purpose',t:'string'},{n:'category_name',t:'string'},{n:'allocated_amount',t:'decimal'},{n:'spent_amount',t:'decimal'}
+      ]},
+      {name:'plan_support_items', cols:8, desc:'Line-item level support items with unit price and quantity', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'category_id',t:'uuid',k:'FK'},{n:'support_item_number',t:'string'},{n:'support_item_name',t:'string'},{n:'unit_of_measure',t:'string'},{n:'unit_price',t:'decimal'},{n:'quantity_allocated',t:'decimal'},{n:'quantity_used',t:'decimal'}
+      ]},
+      {name:'plan_managers', cols:7, desc:'Third-party plan manager details per plan', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'plan_id',t:'uuid',k:'FK'},{n:'manager_type',t:'string'},{n:'company_name',t:'string'},{n:'contact_name',t:'string'},{n:'email',t:'string'},{n:'abn',t:'string'}
+      ]},
+    ]
+  },
+  {
+    key:'services', label:'Services', icon:'ti-list-check',
+    color:{bg:'#EAF3DE',txt:'#27500A'},
+    tables:[
+      {name:'service_types', cols:12, desc:'NDIS catalogue items — standard + time-of-day rates', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'tenant_id',t:'uuid',k:'FK'},{n:'ndis_support_item_number',t:'string'},{n:'name',t:'string'},{n:'support_category',t:'string'},{n:'unit_of_measure',t:'string'},{n:'standard_rate',t:'decimal'},{n:'weeknight_rate',t:'decimal'},{n:'saturday_rate',t:'decimal'},{n:'sunday_rate',t:'decimal'},{n:'public_holiday_rate',t:'decimal'},{n:'is_active',t:'boolean'}
+      ]},
+      {name:'service_agreements', cols:8, desc:'Formalised agreements per participant + plan', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'participant_id',t:'uuid',k:'FK'},{n:'plan_id',t:'uuid',k:'FK'},{n:'agreement_start',t:'date'},{n:'agreement_end',t:'date'},{n:'status',t:'string'},{n:'signed_by_participant',t:'string'},{n:'signed_date',t:'date'}
+      ]},
+      {name:'service_agreement_items', cols:6, desc:'Agreed line items — qty, unit price, frequency', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'agreement_id',t:'uuid',k:'FK'},{n:'service_type_id',t:'uuid',k:'FK'},{n:'quantity_agreed',t:'decimal'},{n:'unit_price',t:'decimal'},{n:'frequency',t:'string'}
+      ]},
+    ]
+  },
+  {
+    key:'scheduling', label:'Scheduling', icon:'ti-calendar',
+    color:{bg:'#FAEEDA',txt:'#633806'},
+    tables:[
+      {name:'shifts', cols:14, desc:'Core shift record — scheduled vs actual, location, transport', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'tenant_id',t:'uuid',k:'FK'},{n:'participant_id',t:'uuid',k:'FK'},{n:'staff_id',t:'uuid',k:'FK'},{n:'service_type_id',t:'uuid',k:'FK'},{n:'scheduled_start',t:'datetime'},{n:'scheduled_end',t:'datetime'},{n:'actual_start',t:'datetime'},{n:'actual_end',t:'datetime'},{n:'status',t:'string'},{n:'location',t:'text'},{n:'requires_transport',t:'boolean'},{n:'kms_travelled',t:'decimal'},{n:'notes',t:'text'}
+      ]},
+      {name:'shift_recurrences', cols:4, desc:'iCal RRULE for recurring shift patterns', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'shift_id',t:'uuid',k:'FK'},{n:'rrule',t:'string'},{n:'recurrence_end',t:'date'},{n:'occurrences_generated',t:'int'}
+      ]},
+      {name:'shift_cancellations', cols:7, desc:'Cancellation reason, billability flag (NDIS policy)', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'shift_id',t:'uuid',k:'FK'},{n:'cancelled_by_type',t:'string'},{n:'cancelled_by_user',t:'uuid',k:'FK'},{n:'reason_code',t:'string'},{n:'reason_notes',t:'text'},{n:'billable',t:'boolean'}
+      ]},
+      {name:'shift_handover_notes', cols:7, desc:'Staff handover documentation per shift', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'shift_id',t:'uuid',k:'FK'},{n:'staff_id',t:'uuid',k:'FK'},{n:'content',t:'text'},{n:'status',t:'string'},{n:'submitted_at',t:'timestamp'},{n:'reviewed_by',t:'uuid',k:'FK'}
+      ]},
+      {name:'leave_requests', cols:9, desc:'Staff leave with type, dates, approval workflow', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'staff_id',t:'uuid',k:'FK'},{n:'leave_type',t:'string'},{n:'start_date',t:'date'},{n:'end_date',t:'date'},{n:'hours',t:'decimal'},{n:'reason',t:'text'},{n:'status',t:'string'},{n:'approved_by',t:'uuid',k:'FK'}
+      ]},
+    ]
+  },
+  {
+    key:'billing', label:'Billing & Claims', icon:'ti-credit-card',
+    color:{bg:'#FBEAF0',txt:'#72243E'},
+    tables:[
+      {name:'invoices', cols:12, desc:'Tax invoices per participant — GST, due date, status', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'tenant_id',t:'uuid',k:'FK'},{n:'participant_id',t:'uuid',k:'FK'},{n:'plan_id',t:'uuid',k:'FK'},{n:'invoice_number',t:'string'},{n:'invoice_date',t:'date'},{n:'due_date',t:'date'},{n:'subtotal',t:'decimal'},{n:'gst_amount',t:'decimal'},{n:'total_amount',t:'decimal'},{n:'status',t:'string'},{n:'paid_at',t:'timestamp'}
+      ]},
+      {name:'invoice_line_items', cols:10, desc:'Shift-level line items with NDIS support item number', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'invoice_id',t:'uuid',k:'FK'},{n:'shift_id',t:'uuid',k:'FK'},{n:'service_type_id',t:'uuid',k:'FK'},{n:'description',t:'string'},{n:'support_item_number',t:'string'},{n:'service_date',t:'date'},{n:'quantity',t:'decimal'},{n:'unit_price',t:'decimal'},{n:'line_total',t:'decimal'}
+      ]},
+      {name:'ndis_claims', cols:11, desc:'NDIS portal BPR submissions — status, response codes', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'tenant_id',t:'uuid',k:'FK'},{n:'invoice_id',t:'uuid',k:'FK'},{n:'claim_reference',t:'string'},{n:'claim_type',t:'string'},{n:'claim_period_start',t:'date'},{n:'claim_period_end',t:'date'},{n:'claim_amount',t:'decimal'},{n:'submission_status',t:'string'},{n:'portal_response_code',t:'string'},{n:'submitted_at',t:'timestamp'}
+      ]},
+      {name:'payments', cols:8, desc:'Payment records for plan-managed/self-managed participants', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'invoice_id',t:'uuid',k:'FK'},{n:'amount',t:'decimal'},{n:'payment_method',t:'string'},{n:'reference_number',t:'string'},{n:'payer_name',t:'string'},{n:'payment_date',t:'date'},{n:'status',t:'string'}
+      ]},
+    ]
+  },
+  {
+    key:'compliance', label:'Compliance', icon:'ti-shield-check',
+    color:{bg:'#F1EFE8',txt:'#2C2C2A'},
+    tables:[
+      {name:'incidents', cols:14, desc:'NDIS reportable incidents — severity, notifications, status', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'tenant_id',t:'uuid',k:'FK'},{n:'participant_id',t:'uuid',k:'FK'},{n:'reported_by',t:'uuid',k:'FK'},{n:'shift_id',t:'uuid',k:'FK'},{n:'incident_type',t:'string'},{n:'severity',t:'string'},{n:'occurred_at',t:'datetime'},{n:'description',t:'text'},{n:'immediate_actions',t:'text'},{n:'notified_participant',t:'boolean'},{n:'notified_ndis_commission',t:'boolean'},{n:'ndis_reportable_type',t:'string'},{n:'status',t:'string'}
+      ]},
+      {name:'incident_follow_ups', cols:5, desc:'Actions taken post-incident with resolution tracking', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'incident_id',t:'uuid',k:'FK'},{n:'staff_id',t:'uuid',k:'FK'},{n:'action_taken',t:'text'},{n:'is_resolved',t:'boolean'}
+      ]},
+      {name:'risk_assessments', cols:9, desc:'Likelihood × impact matrix with mitigation strategies', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'participant_id',t:'uuid',k:'FK'},{n:'risk_area',t:'string'},{n:'risk_description',t:'text'},{n:'likelihood',t:'string'},{n:'impact',t:'string'},{n:'risk_level',t:'string'},{n:'mitigation_strategies',t:'text'},{n:'review_date',t:'date'}
+      ]},
+      {name:'behaviour_support_plans', cols:9, desc:'BSP with triggers, strategies, restrictive practice flags', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'participant_id',t:'uuid',k:'FK'},{n:'plan_date',t:'date'},{n:'review_date',t:'date'},{n:'triggers',t:'text'},{n:'strategies',t:'text'},{n:'uses_restrictive_practices',t:'boolean'},{n:'restrictive_practice_type',t:'string'},{n:'status',t:'string'}
+      ]},
+      {name:'restrictive_practice_records', cols:9, desc:'Per-shift restrictive practice use with NDIS Commission reporting', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'participant_id',t:'uuid',k:'FK'},{n:'shift_id',t:'uuid',k:'FK'},{n:'reported_by',t:'uuid',k:'FK'},{n:'practice_type',t:'string'},{n:'used_at',t:'datetime'},{n:'duration_minutes',t:'int'},{n:'outcome',t:'text'},{n:'reported_to_commission',t:'boolean'}
+      ]},
+      {name:'audits', cols:8, desc:'Certification & practice standard audits', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'tenant_id',t:'uuid',k:'FK'},{n:'audit_type',t:'string'},{n:'auditor_name',t:'string'},{n:'audit_date',t:'date'},{n:'next_audit_date',t:'date'},{n:'outcome',t:'string'},{n:'status',t:'string'}
+      ]},
+    ]
+  },
+  {
+    key:'comms', label:'Communications', icon:'ti-message',
+    color:{bg:'#FCEBEB',txt:'#501313'},
+    tables:[
+      {name:'messages', cols:7, desc:'Internal inbox — broadcast or direct, all message types', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'tenant_id',t:'uuid',k:'FK'},{n:'sender_id',t:'uuid',k:'FK'},{n:'subject',t:'string'},{n:'body',t:'text'},{n:'message_type',t:'string'},{n:'is_broadcast',t:'boolean'}
+      ]},
+      {name:'message_recipients', cols:4, desc:'Delivery + read-receipt tracking per recipient', fields:[
+        {n:'message_id',t:'uuid',k:'FK'},{n:'recipient_id',t:'uuid',k:'FK'},{n:'is_read',t:'boolean'},{n:'read_at',t:'timestamp'}
+      ]},
+      {name:'notifications', cols:8, desc:'In-app / push notifications with payload data', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'user_id',t:'uuid',k:'FK'},{n:'type',t:'string'},{n:'title',t:'string'},{n:'body',t:'text'},{n:'data',t:'jsonb'},{n:'is_read',t:'boolean'},{n:'sent_at',t:'timestamp'}
+      ]},
+      {name:'announcements', cols:7, desc:'Pinnable broadcasts to staff / participants', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'tenant_id',t:'uuid',k:'FK'},{n:'created_by',t:'uuid',k:'FK'},{n:'title',t:'string'},{n:'content',t:'text'},{n:'audience',t:'string'},{n:'is_pinned',t:'boolean'}
+      ]},
+      {name:'audit_logs', cols:9, desc:'Immutable change log — old + new values, IP, user agent', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'tenant_id',t:'uuid',k:'FK'},{n:'user_id',t:'uuid',k:'FK'},{n:'action',t:'string'},{n:'resource_type',t:'string'},{n:'resource_id',t:'uuid'},{n:'old_values',t:'jsonb'},{n:'new_values',t:'jsonb'},{n:'ip_address',t:'string'}
+      ]},
+      {name:'saved_reports', cols:8, desc:'Stored report configs with schedule and sharing flags', fields:[
+        {n:'id',t:'uuid',k:'PK'},{n:'tenant_id',t:'uuid',k:'FK'},{n:'created_by',t:'uuid',k:'FK'},{n:'report_name',t:'string'},{n:'report_type',t:'string'},{n:'filters',t:'jsonb'},{n:'schedule',t:'string'},{n:'is_shared',t:'boolean'}
+      ]},
+    ]
+  },
+];
+
+function renderAll() {
+  const container = document.getElementById('domains');
+  container.innerHTML = '';
+  let total = 0;
+  DOMAINS.forEach(d => {
+    total += d.tables.length;
+    const sec = document.createElement('div');
+    sec.className = 'domain-section';
+    sec.dataset.domain = d.key;
+    sec.innerHTML = `
+      <div class="domain-header" style="background:${d.color.bg};color:${d.color.txt}" onclick="toggleSection(this.parentElement)">
+        <i class="ti ${d.icon}" aria-hidden="true"></i>
+        <span class="domain-title">${d.label}</span>
+        <span class="domain-count">${d.tables.length} tables</span>
+        <i class="ti ti-chevron-down domain-chevron" aria-hidden="true"></i>
+      </div>
+      <div class="tables-grid">${d.tables.map(t => renderCard(t, d)).join('')}</div>
+    `;
+    container.appendChild(sec);
+  });
+  document.getElementById('stats').textContent = total + ' tables';
+}
+
+function renderCard(t, d) {
+  return `<div class="table-card collapsed-card" data-table="${t.name}" data-desc="${t.desc}" onclick="toggleCard(this,'${d.key}','${t.name}')">
+    <div class="table-name">${t.name}</div>
+    <div class="table-cols">${t.cols} columns</div>
+    <div class="table-desc">${t.desc}</div>
+    <div class="cols-detail">${t.fields.map(f => `
+      <div class="col-row">
+        <span class="col-name">${f.n}${f.k ? `<span class="key-badge ${f.k.toLowerCase()}">${f.k}</span>` : ''}</span>
+        <span class="col-type">${f.t}</span>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function toggleCard(el, domain, tname) {
+  const isExp = el.classList.contains('expanded');
+  if (isExp) {
+    el.classList.remove('expanded');
+    el.classList.add('collapsed-card');
+  } else {
+    el.classList.add('expanded');
+    el.classList.remove('collapsed-card');
+  }
+}
+
+function toggleSection(sec) {
+  sec.classList.toggle('collapsed');
+}
+
+function doSearch(q) {
+  q = q.toLowerCase().trim();
+  let visible = 0;
+  DOMAINS.forEach(d => {
+    const sec = document.querySelector(`.domain-section[data-domain="${d.key}"]`);
+    let domainVisible = 0;
+    sec.querySelectorAll('.table-card').forEach((card, i) => {
+      const t = d.tables[i];
+      const match = !q || t.name.includes(q) || t.desc.toLowerCase().includes(q) || t.fields.some(f => f.n.includes(q) || f.t.includes(q));
+      card.classList.toggle('hidden', !match);
+      if (match) { domainVisible++; visible++; }
+    });
+    sec.style.display = domainVisible === 0 ? 'none' : '';
+    if (q && domainVisible > 0) sec.classList.remove('collapsed');
+  });
+  document.getElementById('no-results').style.display = visible === 0 ? '' : 'none';
+  document.getElementById('stats').textContent = (q ? visible + ' matching' : '63') + ' tables';
+}
+
+renderAll();
+</script>
