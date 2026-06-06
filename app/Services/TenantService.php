@@ -41,6 +41,40 @@ class TenantService
         });
     }
 
+    /**
+     * @param  array<string, mixed>  $data
+     * @return array{tenant: Tenant, user: User}
+     */
+    public function createOrganisation(array $data): array
+    {
+        return DB::transaction(function () use ($data) {
+            $tenant = Tenant::create([
+                'name' => $data['name'],
+                'slug' => $this->uniqueSlug($data['name']),
+                'plan' => $data['plan'],
+                'status' => $data['status'],
+                'contact_email' => $data['contact_email'],
+                'contact_phone' => $data['contact_phone'] ?? null,
+                'abn' => $data['abn'] ?? null,
+                'ndis_provider_number' => $data['ndis_provider_number'] ?? null,
+            ]);
+
+            $user = User::create([
+                'tenant_id' => $tenant->id,
+                'first_name' => $data['director_first_name'],
+                'last_name' => $data['director_last_name'],
+                'email' => $data['director_email'],
+                'password' => $data['director_password'],
+                'is_active' => true,
+                'email_verified_at' => now(),
+            ]);
+
+            $user->assignRole('director');
+
+            return compact('tenant', 'user');
+        });
+    }
+
     private function uniqueSlug(string $name): string
     {
         $slug = Str::slug($name);

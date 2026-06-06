@@ -21,6 +21,10 @@ class StoreTenantRequest extends FormRequest
             'abn' => ['nullable', 'string', 'max:20'],
             'ndis_provider_number' => ['nullable', 'string', 'max:20'],
             'contact_phone' => ['nullable', 'string', 'max:20'],
+            'director_first_name' => ['required', 'string', 'max:255'],
+            'director_last_name' => ['required', 'string', 'max:255'],
+            'director_email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'director_password' => ['required', 'string', 'min:8'],
         ];
     }
 }

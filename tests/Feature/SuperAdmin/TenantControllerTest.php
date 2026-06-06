@@ -26,6 +26,8 @@ it('superadmin can create a tenant', function () {
         ->post('/super-admin/tenants', [
             'name' => 'New NDIS Org', 'contact_email' => 'org@example.com',
             'plan' => 'starter', 'status' => 'active',
+            'director_first_name' => 'Jane', 'director_last_name' => 'Director',
+            'director_email' => 'director@newndisorg.com', 'director_password' => 'password123',
         ])
         ->assertRedirect('/super-admin/tenants');
     $this->assertDatabaseHas('tenants', ['name' => 'New NDIS Org']);

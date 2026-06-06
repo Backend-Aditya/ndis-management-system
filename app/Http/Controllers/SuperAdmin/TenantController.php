@@ -10,7 +10,6 @@ use App\Models\Tenant;
 use App\Services\TenantService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -45,10 +44,10 @@ class TenantController extends Controller
 
     public function store(StoreTenantRequest $request): RedirectResponse
     {
-        $data = $request->validated();
-        Tenant::create([...$data, 'slug' => Str::slug($data['name']).'-'.rand(100, 999)]);
+        $this->tenantService->createOrganisation($request->validated());
 
-        return redirect()->route('super-admin.tenants.index')->with('success', "Tenant '{$data['name']}' created.");
+        return redirect()->route('super-admin.tenants.index')
+            ->with('success', 'Organisation and director account created.');
     }
 
     public function edit(Tenant $tenant): Response
