@@ -193,3 +193,55 @@ export interface ServiceAgreementItem {
     unit_price: string;
     frequency: string | null;
 }
+
+export interface Shift {
+    id: string;
+    participant_id: string;
+    staff_id: string;
+    service_type_id: string;
+    scheduled_start: string | null;
+    scheduled_end: string | null;
+    actual_start: string | null;
+    actual_end: string | null;
+    status: 'scheduled' | 'in_progress' | 'completed' | 'cancelled';
+    location: string | null;
+    requires_transport: boolean;
+    kms_travelled: string | null;
+    notes: string | null;
+    participant?: { id: string; full_name: string };
+    staff?: { id: string; full_name: string };
+    service_type?: { id: string; name: string };
+    cancellation?: ShiftCancellation | null;
+    handover_notes?: ShiftHandoverNote[];
+}
+
+export interface ShiftCancellation {
+    id: string;
+    cancelled_by_type: string;
+    reason_code: string | null;
+    reason_notes: string | null;
+    billable: boolean;
+}
+
+export interface ShiftHandoverNote {
+    id: string;
+    shift_id: string;
+    staff_id: string;
+    content: string;
+    status: string;
+    submitted_at: string | null;
+    reviewed_by: string | null;
+}
+
+export interface LeaveRequest {
+    id: string;
+    staff_id: string;
+    leave_type: 'annual' | 'sick' | 'personal' | 'unpaid';
+    start_date: string | null;
+    end_date: string | null;
+    hours: string | null;
+    reason: string | null;
+    status: 'pending' | 'approved' | 'rejected';
+    approved_by: string | null;
+    staff?: { id: string; full_name: string };
+}
