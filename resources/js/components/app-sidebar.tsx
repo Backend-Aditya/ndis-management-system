@@ -5,12 +5,16 @@ import {
     BookOpen,
     CalendarDays,
     CalendarOff,
+    ClipboardCheck,
     ClipboardList,
     CreditCard,
+    FileCheck,
     FileText,
+    FileWarning,
     FolderGit2,
     LayoutGrid,
     Receipt,
+    ShieldAlert,
     Users,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
@@ -61,6 +65,15 @@ const navGroups: NavGroup[] = [
             { title: 'Invoices', href: '/invoices', icon: Receipt },
             { title: 'NDIS Claims', href: '/claims', icon: CreditCard },
             { title: 'Payments', href: '/payments', icon: Banknote },
+        ],
+    },
+    {
+        label: 'Compliance',
+        items: [
+            { title: 'Incidents', href: '/incidents', icon: ShieldAlert },
+            { title: 'Risk Assessments', href: '/risk-assessments', icon: FileWarning },
+            { title: 'Behaviour Plans', href: '/behaviour-support-plans', icon: ClipboardCheck },
+            { title: 'Audits', href: '/audits', icon: FileCheck },
         ],
     },
     {

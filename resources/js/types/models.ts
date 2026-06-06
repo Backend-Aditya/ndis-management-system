@@ -302,3 +302,66 @@ export interface Payment {
     status: string;
     invoice?: { id: string; invoice_number: string };
 }
+
+export interface Incident {
+    id: string;
+    participant_id: string;
+    reported_by: string;
+    shift_id: string | null;
+    incident_type: string;
+    severity: 'low' | 'medium' | 'high' | 'critical';
+    occurred_at: string | null;
+    description: string;
+    immediate_actions: string | null;
+    notified_participant: boolean;
+    notified_ndis_commission: boolean;
+    ndis_reportable_type: string | null;
+    status: 'open' | 'investigating' | 'closed';
+    participant?: { id: string; full_name: string };
+    reporter?: { id: string; full_name: string };
+    follow_ups?: IncidentFollowUp[];
+}
+
+export interface IncidentFollowUp {
+    id: string;
+    incident_id: string;
+    staff_id: string;
+    action_taken: string;
+    is_resolved: boolean;
+}
+
+export interface RiskAssessment {
+    id: string;
+    participant_id: string;
+    risk_area: string;
+    risk_description: string;
+    likelihood: string;
+    impact: string;
+    risk_level: 'low' | 'medium' | 'high' | 'extreme';
+    mitigation_strategies: string | null;
+    review_date: string | null;
+    participant?: { id: string; full_name: string };
+}
+
+export interface BehaviourSupportPlan {
+    id: string;
+    participant_id: string;
+    plan_date: string | null;
+    review_date: string | null;
+    triggers: string | null;
+    strategies: string | null;
+    uses_restrictive_practices: boolean;
+    restrictive_practice_type: string | null;
+    status: 'active' | 'under_review' | 'expired';
+    participant?: { id: string; full_name: string };
+}
+
+export interface Audit {
+    id: string;
+    audit_type: string;
+    auditor_name: string;
+    audit_date: string | null;
+    next_audit_date: string | null;
+    outcome: string | null;
+    status: 'scheduled' | 'in_progress' | 'completed';
+}

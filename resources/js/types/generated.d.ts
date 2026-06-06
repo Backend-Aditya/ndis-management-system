@@ -1,7 +1,42 @@
 declare namespace App {
 namespace Http {
 namespace Resources {
+export type AuditResource = {
+resource: any,
+with: Array<any>,
+additional: Array<any>,
+};
+export type BehaviourSupportPlanResource = {
+resource: any,
+with: Array<any>,
+additional: Array<any>,
+};
+export type IncidentFollowUpResource = {
+resource: any,
+with: Array<any>,
+additional: Array<any>,
+};
+export type IncidentResource = {
+resource: any,
+with: Array<any>,
+additional: Array<any>,
+};
+export type InvoiceLineItemResource = {
+resource: any,
+with: Array<any>,
+additional: Array<any>,
+};
+export type InvoiceResource = {
+resource: any,
+with: Array<any>,
+additional: Array<any>,
+};
 export type LeaveRequestResource = {
+resource: any,
+with: Array<any>,
+additional: Array<any>,
+};
+export type NdisClaimResource = {
 resource: any,
 with: Array<any>,
 additional: Array<any>,
@@ -31,7 +66,17 @@ resource: any,
 with: Array<any>,
 additional: Array<any>,
 };
+export type PaymentResource = {
+resource: any,
+with: Array<any>,
+additional: Array<any>,
+};
 export type PlanSupportCategoryResource = {
+resource: any,
+with: Array<any>,
+additional: Array<any>,
+};
+export type RiskAssessmentResource = {
 resource: any,
 with: Array<any>,
 additional: Array<any>,
