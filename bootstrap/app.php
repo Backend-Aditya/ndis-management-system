@@ -31,6 +31,8 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->group(base_path('routes/scheduling.php'));
             Route::middleware('web')
                 ->group(base_path('routes/billing.php'));
+            Route::middleware('web')
+                ->group(base_path('routes/compliance.php'));
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
