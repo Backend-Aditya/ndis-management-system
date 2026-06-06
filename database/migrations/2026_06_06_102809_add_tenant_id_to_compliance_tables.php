@@ -1,0 +1,27 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        foreach (['risk_assessments', 'behaviour_support_plans', 'restrictive_practice_records'] as $table) {
+            Schema::table($table, function (Blueprint $t) {
+                $t->foreignUuid('tenant_id')->nullable()->constrained()->nullOnDelete()->after('id');
+            });
+        }
+    }
+
+    public function down(): void
+    {
+        foreach (['risk_assessments', 'behaviour_support_plans', 'restrictive_practice_records'] as $table) {
+            Schema::table($table, function (Blueprint $t) {
+                $t->dropForeign(['tenant_id']);
+                $t->dropColumn('tenant_id');
+            });
+        }
+    }
+};
