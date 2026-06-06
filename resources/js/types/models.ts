@@ -245,3 +245,60 @@ export interface LeaveRequest {
     approved_by: string | null;
     staff?: { id: string; full_name: string };
 }
+
+export interface Invoice {
+    id: string;
+    participant_id: string;
+    plan_id: string;
+    invoice_number: string;
+    invoice_date: string | null;
+    due_date: string | null;
+    subtotal: string;
+    gst_amount: string;
+    total_amount: string;
+    status: 'draft' | 'sent' | 'paid' | 'overdue';
+    paid_at: string | null;
+    participant?: { id: string; full_name: string; ndis_number: string };
+    line_items?: InvoiceLineItem[];
+    payments?: Payment[];
+    claim?: NdisClaim | null;
+}
+
+export interface InvoiceLineItem {
+    id: string;
+    invoice_id: string;
+    service_type_id: string;
+    shift_id: string | null;
+    description: string;
+    support_item_number: string | null;
+    service_date: string | null;
+    quantity: string;
+    unit_price: string;
+    line_total: string;
+}
+
+export interface NdisClaim {
+    id: string;
+    invoice_id: string;
+    claim_reference: string | null;
+    claim_type: string;
+    claim_period_start: string | null;
+    claim_period_end: string | null;
+    claim_amount: string;
+    submission_status: 'pending' | 'submitted' | 'rejected' | 'paid';
+    portal_response_code: string | null;
+    submitted_at: string | null;
+    invoice?: { id: string; invoice_number: string };
+}
+
+export interface Payment {
+    id: string;
+    invoice_id: string;
+    amount: string;
+    payment_method: string;
+    reference_number: string | null;
+    payer_name: string | null;
+    payment_date: string | null;
+    status: string;
+    invoice?: { id: string; invoice_number: string };
+}

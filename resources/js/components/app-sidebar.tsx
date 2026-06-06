@@ -1,14 +1,16 @@
 import { Link } from '@inertiajs/react';
 import {
     Accessibility,
+    Banknote,
     BookOpen,
-    Calendar,
+    CalendarDays,
+    CalendarOff,
+    ClipboardList,
     CreditCard,
     FileText,
     FolderGit2,
     LayoutGrid,
-    MessageSquare,
-    Shield,
+    Receipt,
     Users,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
@@ -25,18 +27,46 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
-import type { NavItem } from '@/types';
+import type { NavGroup, NavItem } from '@/types';
 
-const mainNavItems: NavItem[] = [
-    { title: 'Dashboard', href: dashboard(), icon: LayoutGrid },
-    { title: 'Participants', href: '/participants', icon: Accessibility },
-    { title: 'Scheduling', href: '/scheduling', icon: Calendar },
-    { title: 'Plans & Funding', href: '/plans', icon: FileText },
-    { title: 'Services', href: '/services', icon: BookOpen },
-    { title: 'Billing & Claims', href: '/billing', icon: CreditCard },
-    { title: 'Compliance', href: '/compliance', icon: Shield },
-    { title: 'Staff', href: '/staff', icon: Users },
-    { title: 'Communications', href: '/communications', icon: MessageSquare },
+const navGroups: NavGroup[] = [
+    {
+        label: 'Platform',
+        items: [{ title: 'Dashboard', href: dashboard(), icon: LayoutGrid }],
+    },
+    {
+        label: 'Care Management',
+        items: [
+            { title: 'Participants', href: '/participants', icon: Accessibility },
+            { title: 'NDIS Plans', href: '/plans', icon: FileText },
+        ],
+    },
+    {
+        label: 'Services',
+        items: [
+            { title: 'Service Types', href: '/service-types', icon: BookOpen },
+            { title: 'Service Agreements', href: '/service-agreements', icon: ClipboardList },
+        ],
+    },
+    {
+        label: 'Scheduling',
+        items: [
+            { title: 'Shifts', href: '/shifts', icon: CalendarDays },
+            { title: 'Leave Requests', href: '/leave', icon: CalendarOff },
+        ],
+    },
+    {
+        label: 'Billing & Claims',
+        items: [
+            { title: 'Invoices', href: '/invoices', icon: Receipt },
+            { title: 'NDIS Claims', href: '/claims', icon: CreditCard },
+            { title: 'Payments', href: '/payments', icon: Banknote },
+        ],
+    },
+    {
+        label: 'Team',
+        items: [{ title: 'Staff', href: '/staff', icon: Users }],
+    },
 ];
 
 const footerNavItems: NavItem[] = [
@@ -63,7 +93,7 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain groups={navGroups} />
             </SidebarContent>
 
             <SidebarFooter>
