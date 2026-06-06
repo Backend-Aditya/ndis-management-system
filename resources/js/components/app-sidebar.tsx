@@ -13,7 +13,10 @@ import {
     FileWarning,
     FolderGit2,
     LayoutGrid,
+    Megaphone,
+    MessageSquare,
     Receipt,
+    ScrollText,
     ShieldAlert,
     Users,
 } from 'lucide-react';
@@ -77,16 +80,16 @@ const navGroups: NavGroup[] = [
         ],
     },
     {
+        label: 'Communications',
+        items: [
+            { title: 'Messages', href: '/messages', icon: MessageSquare },
+            { title: 'Announcements', href: '/announcements', icon: Megaphone },
+            { title: 'Audit Logs', href: '/audit-logs', icon: ScrollText },
+        ],
+    },
+    {
         label: 'Team',
         items: [{ title: 'Staff', href: '/staff', icon: Users }],
-    },
-];
-
-const footerNavItems: NavItem[] = [
-    {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: FolderGit2,
     },
 ];
 
@@ -110,7 +113,6 @@ export function AppSidebar() {
             </SidebarContent>
 
             <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

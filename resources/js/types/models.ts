@@ -365,3 +365,39 @@ export interface Audit {
     outcome: string | null;
     status: 'scheduled' | 'in_progress' | 'completed';
 }
+
+export interface Message {
+    id: string;
+    sender_id: string;
+    subject: string;
+    body: string;
+    message_type: 'general' | 'urgent' | 'reminder';
+    is_broadcast: boolean;
+    created_at: string;
+    sender?: { id: string; full_name: string };
+    recipient_count?: number;
+}
+
+export interface Announcement {
+    id: string;
+    created_by: string;
+    title: string;
+    content: string;
+    audience: 'all_staff' | 'managers' | 'participants' | 'everyone';
+    is_pinned: boolean;
+    created_at: string;
+    creator?: { id: string; full_name: string };
+}
+
+export interface AuditLog {
+    id: string;
+    user_id: string | null;
+    action: string;
+    resource_type: string;
+    resource_id: string | null;
+    old_values: Record<string, unknown> | null;
+    new_values: Record<string, unknown> | null;
+    ip_address: string | null;
+    created_at: string;
+    user?: { id: string; full_name: string } | null;
+}
