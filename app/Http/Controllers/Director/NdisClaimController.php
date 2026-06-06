@@ -7,6 +7,7 @@ use App\Http\Resources\NdisClaimResource;
 use App\Models\NdisClaim;
 use App\Services\ClaimService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -14,9 +15,19 @@ class NdisClaimController extends Controller
 {
     public function __construct(private readonly ClaimService $claimService) {}
 
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $claims = NdisClaim::with('invoice')->latest()->paginate(25);
+        $search = $request->string('search')->toString();
+
+        $claims = NdisClaim::with('invoice')
+            ->when($search, function ($q) use ($search) {
+                $q->where('claim_reference', 'like', "%{$search}%")
+                    ->orWhere('claim_type', 'like', "%{$search}%")
+                    ->orWhere('submission_status', 'like', "%{$search}%");
+            })
+            ->latest()
+            ->paginate(25)
+            ->withQueryString();
 
         return Inertia::render('billing/claims/index', [
             'claims' => NdisClaimResource::collection($claims),

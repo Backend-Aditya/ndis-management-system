@@ -8,6 +8,7 @@ use App\Http\Resources\AnnouncementResource;
 use App\Models\Announcement;
 use App\Services\AnnouncementService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -15,12 +16,19 @@ class AnnouncementController extends Controller
 {
     public function __construct(private readonly AnnouncementService $announcementService) {}
 
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        $search = $request->string('search')->toString();
+
         $announcements = Announcement::with('creator')
+            ->when($search, function ($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                    ->orWhere('audience', 'like', "%{$search}%");
+            })
             ->orderByDesc('is_pinned')
             ->latest()
-            ->paginate(25);
+            ->paginate(25)
+            ->withQueryString();
 
         return Inertia::render('communications/announcements/index', [
             'announcements' => AnnouncementResource::collection($announcements),

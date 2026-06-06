@@ -10,6 +10,7 @@ use App\Models\Message;
 use App\Models\User;
 use App\Services\MessageService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -17,9 +18,19 @@ class MessageController extends Controller
 {
     public function __construct(private readonly MessageService $messageService) {}
 
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $messages = Message::with('sender')->withCount('recipients')->latest()->paginate(25);
+        $search = $request->string('search')->toString();
+
+        $messages = Message::with('sender')
+            ->withCount('recipients')
+            ->when($search, function ($q) use ($search) {
+                $q->where('subject', 'like', "%{$search}%")
+                    ->orWhere('message_type', 'like', "%{$search}%");
+            })
+            ->latest()
+            ->paginate(25)
+            ->withQueryString();
 
         return Inertia::render('communications/messages/index', [
             'messages' => MessageResource::collection($messages),

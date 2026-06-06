@@ -18,6 +18,7 @@ use App\Services\ClaimService;
 use App\Services\InvoiceService;
 use App\Services\PaymentService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -29,9 +30,20 @@ class InvoiceController extends Controller
         private readonly ClaimService $claimService,
     ) {}
 
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $invoices = Invoice::with('participant')->latest()->paginate(25);
+        $search = $request->string('search')->toString();
+
+        $invoices = Invoice::with('participant')
+            ->when($search, function ($q) use ($search) {
+                $q->where('invoice_number', 'like', "%{$search}%")
+                    ->orWhere('status', 'like', "%{$search}%")
+                    ->orWhereHas('participant', fn ($pq) => $pq->where('first_name', 'like', "%{$search}%")
+                        ->orWhere('last_name', 'like', "%{$search}%"));
+            })
+            ->latest()
+            ->paginate(25)
+            ->withQueryString();
 
         return Inertia::render('billing/invoices/index', [
             'invoices' => InvoiceResource::collection($invoices),

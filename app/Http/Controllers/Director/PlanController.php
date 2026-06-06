@@ -11,6 +11,7 @@ use App\Models\NdisPlan;
 use App\Models\Participant;
 use App\Services\PlanService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -18,9 +19,19 @@ class PlanController extends Controller
 {
     public function __construct(private readonly PlanService $planService) {}
 
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $plans = NdisPlan::with('participant')->latest()->paginate(25);
+        $search = $request->string('search')->toString();
+
+        $plans = NdisPlan::with('participant')
+            ->when($search, function ($q) use ($search) {
+                $q->where('plan_number', 'like', "%{$search}%")
+                    ->orWhereHas('participant', fn ($pq) => $pq->where('first_name', 'like', "%{$search}%")
+                        ->orWhere('last_name', 'like', "%{$search}%"));
+            })
+            ->latest()
+            ->paginate(25)
+            ->withQueryString();
 
         return Inertia::render('plans/index', [
             'plans' => NdisPlanResource::collection($plans),
@@ -51,14 +62,14 @@ class PlanController extends Controller
         $plan->load(['participant', 'supportCategories.items', 'managers']);
 
         return Inertia::render('plans/show', [
-            'plan' => NdisPlanResource::make($plan),
+            'plan' => NdisPlanResource::make($plan)->resolve(),
         ]);
     }
 
     public function edit(NdisPlan $plan): Response
     {
         return Inertia::render('plans/edit', [
-            'plan' => NdisPlanResource::make($plan),
+            'plan' => NdisPlanResource::make($plan)->resolve(),
         ]);
     }
 

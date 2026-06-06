@@ -9,6 +9,7 @@ use App\Http\Resources\TenantResource;
 use App\Models\Tenant;
 use App\Services\TenantService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -17,9 +18,20 @@ class TenantController extends Controller
 {
     public function __construct(private readonly TenantService $tenantService) {}
 
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $tenants = Tenant::withoutGlobalScopes()->latest()->paginate(25);
+        $search = $request->string('search')->toString();
+
+        $tenants = Tenant::withoutGlobalScopes()
+            ->when($search, function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('contact_email', 'like', "%{$search}%")
+                    ->orWhere('abn', 'like', "%{$search}%")
+                    ->orWhere('ndis_provider_number', 'like', "%{$search}%");
+            })
+            ->latest()
+            ->paginate(25)
+            ->withQueryString();
 
         return Inertia::render('super-admin/tenants/index', [
             'tenants' => TenantResource::collection($tenants),
@@ -42,7 +54,7 @@ class TenantController extends Controller
     public function edit(Tenant $tenant): Response
     {
         return Inertia::render('super-admin/tenants/edit', [
-            'tenant' => TenantResource::make($tenant),
+            'tenant' => TenantResource::make($tenant)->resolve(),
         ]);
     }
 

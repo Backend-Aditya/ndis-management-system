@@ -9,6 +9,7 @@ use App\Http\Resources\UserResource;
 use App\Models\User;
 use App\Services\StaffService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -16,11 +17,20 @@ class StaffController extends Controller
 {
     public function __construct(private readonly StaffService $staffService) {}
 
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        $search = $request->string('search')->toString();
+
         $staff = User::with('staffProfile')
             ->whereHas('roles', fn ($q) => $q->whereIn('name', ['manager', 'staff_worker', 'director']))
-            ->latest()->paginate(25);
+            ->when($search, function ($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                    ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            })
+            ->latest()
+            ->paginate(25)
+            ->withQueryString();
 
         return Inertia::render('staff/index', ['staff' => UserResource::collection($staff)]);
     }
@@ -41,14 +51,14 @@ class StaffController extends Controller
     {
         $staff->load(['staffProfile.qualifications', 'staffProfile.availability']);
 
-        return Inertia::render('staff/show', ['staff' => UserResource::make($staff)]);
+        return Inertia::render('staff/show', ['staff' => UserResource::make($staff)->resolve()]);
     }
 
     public function edit(User $staff): Response
     {
         $staff->load('staffProfile');
 
-        return Inertia::render('staff/edit', ['staff' => UserResource::make($staff)]);
+        return Inertia::render('staff/edit', ['staff' => UserResource::make($staff)->resolve()]);
     }
 
     public function update(UpdateStaffRequest $request, User $staff): RedirectResponse

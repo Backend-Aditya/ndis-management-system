@@ -9,6 +9,7 @@ use App\Http\Resources\ParticipantResource;
 use App\Models\Participant;
 use App\Services\ParticipantService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -16,9 +17,19 @@ class ParticipantController extends Controller
 {
     public function __construct(private readonly ParticipantService $participantService) {}
 
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $participants = Participant::latest()->paginate(25);
+        $search = $request->string('search')->toString();
+
+        $participants = Participant::query()
+            ->when($search, function ($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                    ->orWhere('last_name', 'like', "%{$search}%")
+                    ->orWhere('ndis_number', 'like', "%{$search}%");
+            })
+            ->latest()
+            ->paginate(25)
+            ->withQueryString();
 
         return Inertia::render('participants/index', [
             'participants' => ParticipantResource::collection($participants),
@@ -43,14 +54,14 @@ class ParticipantController extends Controller
         $participant->load(['contacts', 'goals', 'diagnoses', 'supportCoordinators.staff']);
 
         return Inertia::render('participants/show', [
-            'participant' => ParticipantResource::make($participant),
+            'participant' => ParticipantResource::make($participant)->resolve(),
         ]);
     }
 
     public function edit(Participant $participant): Response
     {
         return Inertia::render('participants/edit', [
-            'participant' => ParticipantResource::make($participant),
+            'participant' => ParticipantResource::make($participant)->resolve(),
         ]);
     }
 

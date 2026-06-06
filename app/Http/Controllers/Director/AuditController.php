@@ -8,6 +8,7 @@ use App\Http\Resources\AuditResource;
 use App\Models\Audit;
 use App\Services\ComplianceService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -15,9 +16,20 @@ class AuditController extends Controller
 {
     public function __construct(private readonly ComplianceService $complianceService) {}
 
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $audits = Audit::latest()->paginate(25);
+        $search = $request->string('search')->toString();
+
+        $audits = Audit::query()
+            ->when($search, function ($q) use ($search) {
+                $q->where('audit_type', 'like', "%{$search}%")
+                    ->orWhere('auditor_name', 'like', "%{$search}%")
+                    ->orWhere('outcome', 'like', "%{$search}%")
+                    ->orWhere('status', 'like', "%{$search}%");
+            })
+            ->latest()
+            ->paginate(25)
+            ->withQueryString();
 
         return Inertia::render('compliance/audits/index', [
             'audits' => AuditResource::collection($audits),

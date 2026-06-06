@@ -10,6 +10,7 @@ use App\Models\Participant;
 use App\Models\RiskAssessment;
 use App\Services\ComplianceService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -17,9 +18,22 @@ class RiskAssessmentController extends Controller
 {
     public function __construct(private readonly ComplianceService $complianceService) {}
 
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $assessments = RiskAssessment::with('participant')->latest()->paginate(25);
+        $search = $request->string('search')->toString();
+
+        $assessments = RiskAssessment::with('participant')
+            ->when($search, function ($q) use ($search) {
+                $q->where('risk_area', 'like', "%{$search}%")
+                    ->orWhere('risk_level', 'like', "%{$search}%")
+                    ->orWhere('likelihood', 'like', "%{$search}%")
+                    ->orWhere('impact', 'like', "%{$search}%")
+                    ->orWhereHas('participant', fn ($pq) => $pq->where('first_name', 'like', "%{$search}%")
+                        ->orWhere('last_name', 'like', "%{$search}%"));
+            })
+            ->latest()
+            ->paginate(25)
+            ->withQueryString();
 
         return Inertia::render('compliance/risk-assessments/index', [
             'assessments' => RiskAssessmentResource::collection($assessments),

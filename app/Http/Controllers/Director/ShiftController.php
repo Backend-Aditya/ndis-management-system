@@ -17,6 +17,7 @@ use App\Models\Shift;
 use App\Models\User;
 use App\Services\ShiftService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -24,11 +25,20 @@ class ShiftController extends Controller
 {
     public function __construct(private readonly ShiftService $shiftService) {}
 
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        $search = $request->string('search')->toString();
+
         $shifts = Shift::with(['participant', 'staff', 'serviceType'])
+            ->when($search, function ($q) use ($search) {
+                $q->where('status', 'like', "%{$search}%")
+                    ->orWhere('location', 'like', "%{$search}%")
+                    ->orWhereHas('participant', fn ($pq) => $pq->where('first_name', 'like', "%{$search}%")
+                        ->orWhere('last_name', 'like', "%{$search}%"));
+            })
             ->orderBy('scheduled_start', 'desc')
-            ->paginate(25);
+            ->paginate(25)
+            ->withQueryString();
 
         return Inertia::render('scheduling/shifts/index', [
             'shifts' => ShiftResource::collection($shifts),

@@ -12,6 +12,7 @@ use App\Models\Participant;
 use App\Models\ServiceAgreement;
 use App\Services\ServiceTypeService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -19,9 +20,19 @@ class ServiceAgreementController extends Controller
 {
     public function __construct(private readonly ServiceTypeService $serviceTypeService) {}
 
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $agreements = ServiceAgreement::with('participant')->latest()->paginate(25);
+        $search = $request->string('search')->toString();
+
+        $agreements = ServiceAgreement::with('participant')
+            ->when($search, function ($q) use ($search) {
+                $q->where('status', 'like', "%{$search}%")
+                    ->orWhereHas('participant', fn ($pq) => $pq->where('first_name', 'like', "%{$search}%")
+                        ->orWhere('last_name', 'like', "%{$search}%"));
+            })
+            ->latest()
+            ->paginate(25)
+            ->withQueryString();
 
         return Inertia::render('services/agreements/index', [
             'agreements' => ServiceAgreementResource::collection($agreements),
@@ -52,7 +63,7 @@ class ServiceAgreementController extends Controller
         $serviceAgreement->load(['participant', 'plan', 'items.serviceType']);
 
         return Inertia::render('services/agreements/show', [
-            'agreement' => ServiceAgreementResource::make($serviceAgreement),
+            'agreement' => ServiceAgreementResource::make($serviceAgreement)->resolve(),
         ]);
     }
 

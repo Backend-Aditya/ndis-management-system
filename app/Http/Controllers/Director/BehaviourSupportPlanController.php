@@ -10,6 +10,7 @@ use App\Models\BehaviourSupportPlan;
 use App\Models\Participant;
 use App\Services\ComplianceService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -17,9 +18,20 @@ class BehaviourSupportPlanController extends Controller
 {
     public function __construct(private readonly ComplianceService $complianceService) {}
 
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $plans = BehaviourSupportPlan::with('participant')->latest()->paginate(25);
+        $search = $request->string('search')->toString();
+
+        $plans = BehaviourSupportPlan::with('participant')
+            ->when($search, function ($q) use ($search) {
+                $q->where('status', 'like', "%{$search}%")
+                    ->orWhere('restrictive_practice_type', 'like', "%{$search}%")
+                    ->orWhereHas('participant', fn ($pq) => $pq->where('first_name', 'like', "%{$search}%")
+                        ->orWhere('last_name', 'like', "%{$search}%"));
+            })
+            ->latest()
+            ->paginate(25)
+            ->withQueryString();
 
         return Inertia::render('compliance/behaviour-support-plans/index', [
             'plans' => BehaviourSupportPlanResource::collection($plans),
