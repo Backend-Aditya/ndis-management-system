@@ -1,6 +1,16 @@
 declare namespace App {
 namespace Http {
 namespace Resources {
+export type AnnouncementResource = {
+resource: any,
+with: Array<any>,
+additional: Array<any>,
+};
+export type AuditLogResource = {
+resource: any,
+with: Array<any>,
+additional: Array<any>,
+};
 export type AuditResource = {
 resource: any,
 with: Array<any>,
@@ -32,6 +42,11 @@ with: Array<any>,
 additional: Array<any>,
 };
 export type LeaveRequestResource = {
+resource: any,
+with: Array<any>,
+additional: Array<any>,
+};
+export type MessageResource = {
 resource: any,
 with: Array<any>,
 additional: Array<any>,

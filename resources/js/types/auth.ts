@@ -1,12 +1,17 @@
 export type User = {
-    id: number;
-    name: string;
+    id: string;
+    first_name: string;
+    last_name: string;
+    full_name: string;
     email: string;
-    avatar?: string;
-    email_verified_at: string | null;
+    phone: string | null;
+    avatar_url: string | null;
+    is_active: boolean;
+    last_login_at: string | null;
+    roles: string[];
+    tenant_id: string | null;
+    email_verified_at?: string | null;
     two_factor_enabled?: boolean;
-    created_at: string;
-    updated_at: string;
     [key: string]: unknown;
 };
 

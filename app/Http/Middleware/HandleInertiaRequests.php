@@ -29,10 +29,10 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'name' => config('app.name'),
             'auth' => [
-                'user' => $user ? UserResource::make($user) : null,
+                'user' => $user ? UserResource::make($user)->resolve($request) : null,
                 'roles' => $user ? $user->getRoleNames() : [],
                 'tenant' => $user && app()->has('tenant')
-                    ? TenantResource::make(app('tenant'))
+                    ? TenantResource::make(app('tenant'))->resolve($request)
                     : null,
             ],
             'flash' => [

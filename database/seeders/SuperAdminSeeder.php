@@ -14,7 +14,7 @@ class SuperAdminSeeder extends Seeder
             [
                 'first_name' => 'Super',
                 'last_name' => 'Admin',
-                'password' => bcrypt(env('SUPER_ADMIN_PASSWORD', 'password')),
+                'password' => env('SUPER_ADMIN_PASSWORD', 'password'),
                 'tenant_id' => null,
                 'is_active' => true,
                 'email_verified_at' => now(),
