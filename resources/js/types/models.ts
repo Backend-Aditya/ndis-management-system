@@ -107,3 +107,89 @@ export interface ParticipantDiagnosis {
     diagnosed_date: string | null;
     is_primary: boolean;
 }
+
+export interface NdisPlan {
+    id: string;
+    participant_id: string;
+    plan_number: string | null;
+    plan_start_date: string | null;
+    plan_end_date: string | null;
+    plan_type: string | null;
+    management_type: 'agency_managed' | 'plan_managed' | 'self_managed';
+    core_total: string | null;
+    capacity_total: string | null;
+    capital_total: string | null;
+    total_funding: string | null;
+    status: 'active' | 'expired' | 'pending';
+    ndia_contact_name: string | null;
+    ndia_contact_phone: string | null;
+    participant?: { id: string; full_name: string; ndis_number: string };
+    support_categories?: PlanSupportCategory[];
+    managers?: PlanManager[];
+    created_at: string;
+}
+
+export interface PlanSupportCategory {
+    id: string;
+    plan_id: string;
+    support_purpose: string;
+    category_name: string;
+    allocated_amount: string;
+    spent_amount: string;
+    items?: PlanSupportItem[];
+}
+
+export interface PlanSupportItem {
+    id: string;
+    support_item_number: string | null;
+    support_item_name: string;
+    unit_of_measure: string | null;
+    unit_price: string;
+    quantity_allocated: string;
+    quantity_used: string;
+}
+
+export interface PlanManager {
+    id: string;
+    manager_type: string;
+    company_name: string | null;
+    contact_name: string | null;
+    email: string | null;
+    abn: string | null;
+}
+
+export interface ServiceType {
+    id: string;
+    ndis_support_item_number: string | null;
+    name: string;
+    support_category: string | null;
+    unit_of_measure: string | null;
+    standard_rate: string;
+    weeknight_rate: string | null;
+    saturday_rate: string | null;
+    sunday_rate: string | null;
+    public_holiday_rate: string | null;
+    is_active: boolean;
+}
+
+export interface ServiceAgreement {
+    id: string;
+    participant_id: string;
+    plan_id: string;
+    agreement_start: string | null;
+    agreement_end: string | null;
+    status: string;
+    signed_by_participant: string | null;
+    signed_date: string | null;
+    participant?: { id: string; full_name: string };
+    items?: ServiceAgreementItem[];
+}
+
+export interface ServiceAgreementItem {
+    id: string;
+    service_type_id: string;
+    service_type_name: string | null;
+    quantity_agreed: string;
+    unit_price: string;
+    frequency: string | null;
+}
