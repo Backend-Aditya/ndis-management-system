@@ -7,7 +7,7 @@ import { DataTable } from '@/components/data-table/data-table';
 import {
     DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import SuperAdminLayout from '@/layouts/super-admin-layout';
+import AppLayout from '@/layouts/app-layout';
 import type { PaginatedResource, Tenant } from '@/types/models';
 
 const statusVariant = (status: string) =>
@@ -70,7 +70,7 @@ export default function TenantsIndex({ tenants }: { tenants: PaginatedResource<T
     return (
         <>
             <Head title="Tenants" />
-            <div className="space-y-6">
+            <div className="space-y-6 p-6">
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-semibold">Tenants</h1>
                     <Button asChild>
@@ -83,4 +83,4 @@ export default function TenantsIndex({ tenants }: { tenants: PaginatedResource<T
     );
 }
 
-TenantsIndex.layout = (page: React.ReactNode) => <SuperAdminLayout>{page}</SuperAdminLayout>;
+TenantsIndex.layout = (page: React.ReactNode) => <AppLayout children={page} />;

@@ -1,8 +1,9 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import {
     Accessibility,
     Banknote,
     BookOpen,
+    Building2,
     CalendarDays,
     CalendarOff,
     ClipboardCheck,
@@ -11,13 +12,14 @@ import {
     FileCheck,
     FileText,
     FileWarning,
-    FolderGit2,
+    KeyRound,
     LayoutGrid,
     Megaphone,
     MessageSquare,
     Receipt,
     ScrollText,
     ShieldAlert,
+    ShieldCheck,
     Users,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
@@ -34,9 +36,24 @@ import {
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import { dashboard } from '@/routes';
-import type { NavGroup, NavItem } from '@/types';
+import type { NavGroup } from '@/types';
 
-const navGroups: NavGroup[] = [
+const superAdminGroups: NavGroup[] = [
+    {
+        label: 'Platform',
+        items: [{ title: 'Dashboard', href: '/dashboard', icon: LayoutGrid }],
+    },
+    {
+        label: 'Super Admin',
+        items: [
+            { title: 'Organisations', href: '/super-admin/tenants', icon: Building2 },
+            { title: 'Platform Admins', href: '/super-admin/platform-admins', icon: ShieldCheck },
+            { title: 'Roles & Permissions', href: '/super-admin/roles', icon: KeyRound },
+        ],
+    },
+];
+
+const tenantGroups: NavGroup[] = [
     {
         label: 'Platform',
         items: [{ title: 'Dashboard', href: dashboard(), icon: LayoutGrid }],
@@ -94,6 +111,11 @@ const navGroups: NavGroup[] = [
 ];
 
 export function AppSidebar() {
+    const page = usePage<{ auth: { roles: string[] } }>();
+    const roles = page.props.auth?.roles ?? [];
+    const isSuperAdmin = roles.includes('super_admin');
+    const groups = isSuperAdmin ? superAdminGroups : tenantGroups;
+
     return (
         <Sidebar collapsible="icon" variant="inset">
             <SidebarHeader>
@@ -109,7 +131,7 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain groups={navGroups} />
+                <NavMain groups={groups} />
             </SidebarContent>
 
             <SidebarFooter>
