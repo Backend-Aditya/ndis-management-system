@@ -5,7 +5,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import InputError from '@/components/input-error';
+import { FormSection } from '@/components/form/form-section';
+import { FormField } from '@/components/form/form-field';
+import { FormActions } from '@/components/form/form-actions';
 import type { Participant } from '@/types/models';
 
 interface Props {
@@ -38,153 +40,125 @@ export default function IncidentsCreate({ participants }: Props) {
                     }}
                     className="space-y-6"
                 >
-                    {/* Basic Details */}
-                    <div className="space-y-4">
-                        <h2 className="text-base font-medium text-muted-foreground">Basic Details</h2>
-                        <div className="grid gap-4 sm:grid-cols-2">
-                            <div className="space-y-2">
-                                <Label>Participant *</Label>
-                                <Select value={data.participant_id} onValueChange={(v) => setData('participant_id', v)}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select participant" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {participants.data.map((p) => (
-                                            <SelectItem key={p.id} value={p.id}>
-                                                {p.full_name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <InputError message={errors.participant_id} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Incident Type *</Label>
-                                <Select value={data.incident_type} onValueChange={(v) => setData('incident_type', v)}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select type" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="injury">Injury</SelectItem>
-                                        <SelectItem value="medication_error">Medication Error</SelectItem>
-                                        <SelectItem value="behaviour">Behaviour</SelectItem>
-                                        <SelectItem value="property_damage">Property Damage</SelectItem>
-                                        <SelectItem value="abuse_neglect">Abuse / Neglect</SelectItem>
-                                        <SelectItem value="other">Other</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <InputError message={errors.incident_type} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Severity *</Label>
-                                <Select value={data.severity} onValueChange={(v) => setData('severity', v)}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select severity" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="low">Low</SelectItem>
-                                        <SelectItem value="medium">Medium</SelectItem>
-                                        <SelectItem value="high">High</SelectItem>
-                                        <SelectItem value="critical">Critical</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <InputError message={errors.severity} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="occurred_at">Occurred At</Label>
-                                <Input
-                                    id="occurred_at"
-                                    type="datetime-local"
-                                    value={data.occurred_at}
-                                    onChange={(e) => setData('occurred_at', e.target.value)}
-                                />
-                                <InputError message={errors.occurred_at} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Status</Label>
-                                <Select value={data.status} onValueChange={(v) => setData('status', v)}>
-                                    <SelectTrigger>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="open">Open</SelectItem>
-                                        <SelectItem value="investigating">Investigating</SelectItem>
-                                        <SelectItem value="closed">Closed</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <InputError message={errors.status} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="ndis_reportable_type">NDIS Reportable Type</Label>
-                                <Input
-                                    id="ndis_reportable_type"
-                                    value={data.ndis_reportable_type}
-                                    onChange={(e) => setData('ndis_reportable_type', e.target.value)}
-                                    placeholder="e.g. serious injury"
-                                />
-                                <InputError message={errors.ndis_reportable_type} />
-                            </div>
-                        </div>
-                    </div>
+                    <FormSection title="Incident">
+                        <FormField label="Participant" error={errors.participant_id} required>
+                            <Select value={data.participant_id} onValueChange={(v) => setData('participant_id', v)}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select participant" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {participants.data.map((p) => (
+                                        <SelectItem key={p.id} value={p.id}>
+                                            {p.full_name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </FormField>
+                        <FormField label="Incident Type" error={errors.incident_type} required>
+                            <Select value={data.incident_type} onValueChange={(v) => setData('incident_type', v)}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="injury">Injury</SelectItem>
+                                    <SelectItem value="medication_error">Medication Error</SelectItem>
+                                    <SelectItem value="behaviour">Behaviour</SelectItem>
+                                    <SelectItem value="property_damage">Property Damage</SelectItem>
+                                    <SelectItem value="abuse_neglect">Abuse / Neglect</SelectItem>
+                                    <SelectItem value="other">Other</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </FormField>
+                        <FormField label="Severity" error={errors.severity} required>
+                            <Select value={data.severity} onValueChange={(v) => setData('severity', v)}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select severity" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="low">Low</SelectItem>
+                                    <SelectItem value="medium">Medium</SelectItem>
+                                    <SelectItem value="high">High</SelectItem>
+                                    <SelectItem value="critical">Critical</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </FormField>
+                        <FormField label="Occurred At" htmlFor="occurred_at" error={errors.occurred_at}>
+                            <Input
+                                id="occurred_at"
+                                type="datetime-local"
+                                value={data.occurred_at}
+                                onChange={(e) => setData('occurred_at', e.target.value)}
+                            />
+                        </FormField>
+                        <FormField label="Status" error={errors.status}>
+                            <Select value={data.status} onValueChange={(v) => setData('status', v)}>
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="open">Open</SelectItem>
+                                    <SelectItem value="investigating">Investigating</SelectItem>
+                                    <SelectItem value="closed">Closed</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </FormField>
+                    </FormSection>
 
-                    {/* Description */}
-                    <div className="space-y-4">
-                        <h2 className="text-base font-medium text-muted-foreground">Description</h2>
-                        <div className="space-y-2">
-                            <Label htmlFor="description">Description *</Label>
+                    <FormSection title="Details">
+                        <FormField label="Description" htmlFor="description" error={errors.description} required full>
                             <textarea
                                 id="description"
-                                className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
-                                rows={4}
+                                className="border-input bg-background min-h-[90px] w-full rounded-md border px-3 py-2 text-sm"
                                 value={data.description}
                                 onChange={(e) => setData('description', e.target.value)}
                             />
-                            <InputError message={errors.description} />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="immediate_actions">Immediate Actions Taken</Label>
+                        </FormField>
+                        <FormField label="Immediate Actions Taken" htmlFor="immediate_actions" error={errors.immediate_actions} full>
                             <textarea
                                 id="immediate_actions"
-                                className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
-                                rows={3}
+                                className="border-input bg-background min-h-[90px] w-full rounded-md border px-3 py-2 text-sm"
                                 value={data.immediate_actions}
                                 onChange={(e) => setData('immediate_actions', e.target.value)}
                             />
-                            <InputError message={errors.immediate_actions} />
-                        </div>
-                    </div>
+                        </FormField>
+                        <FormField label="NDIS Reportable Type" htmlFor="ndis_reportable_type" error={errors.ndis_reportable_type}>
+                            <Input
+                                id="ndis_reportable_type"
+                                value={data.ndis_reportable_type}
+                                onChange={(e) => setData('ndis_reportable_type', e.target.value)}
+                                placeholder="e.g. serious injury"
+                            />
+                        </FormField>
+                    </FormSection>
 
-                    {/* Notifications */}
-                    <div className="space-y-4">
-                        <h2 className="text-base font-medium text-muted-foreground">Notifications</h2>
-                        <div className="flex flex-col gap-3">
-                            <div className="flex items-center gap-2">
-                                <Checkbox
-                                    id="notified_participant"
-                                    checked={data.notified_participant}
-                                    onCheckedChange={(v) => setData('notified_participant', Boolean(v))}
-                                />
-                                <Label htmlFor="notified_participant">Participant notified</Label>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Checkbox
-                                    id="notified_ndis_commission"
-                                    checked={data.notified_ndis_commission}
-                                    onCheckedChange={(v) => setData('notified_ndis_commission', Boolean(v))}
-                                />
-                                <Label htmlFor="notified_ndis_commission">NDIS Commission notified</Label>
-                            </div>
+                    <FormSection title="Notifications">
+                        <div className="flex items-center gap-2 sm:col-span-2">
+                            <Checkbox
+                                id="notified_participant"
+                                checked={data.notified_participant}
+                                onCheckedChange={(v) => setData('notified_participant', Boolean(v))}
+                            />
+                            <Label htmlFor="notified_participant">Participant notified</Label>
                         </div>
-                    </div>
+                        <div className="flex items-center gap-2 sm:col-span-2">
+                            <Checkbox
+                                id="notified_ndis_commission"
+                                checked={data.notified_ndis_commission}
+                                onCheckedChange={(v) => setData('notified_ndis_commission', Boolean(v))}
+                            />
+                            <Label htmlFor="notified_ndis_commission">NDIS Commission notified</Label>
+                        </div>
+                    </FormSection>
 
-                    <div className="flex gap-3 pt-2">
-                        <Button type="submit" disabled={processing}>
-                            Report Incident
-                        </Button>
+                    <FormActions>
                         <Button type="button" variant="outline" onClick={() => history.back()}>
                             Cancel
                         </Button>
-                    </div>
+                        <Button type="submit" disabled={processing}>
+                            Report Incident
+                        </Button>
+                    </FormActions>
                 </form>
             </div>
         </>

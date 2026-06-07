@@ -2,9 +2,10 @@ import { Head, useForm } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import InputError from '@/components/input-error';
+import { FormSection } from '@/components/form/form-section';
+import { FormField } from '@/components/form/form-field';
+import { FormActions } from '@/components/form/form-actions';
 import type { Participant, PaginatedResource } from '@/types/models';
 
 export default function PlansCreate({ participants }: { participants: PaginatedResource<Participant> }) {
@@ -35,176 +36,140 @@ export default function PlansCreate({ participants }: { participants: PaginatedR
                     }}
                     className="space-y-6"
                 >
-                    {/* Plan Details */}
-                    <div className="space-y-4">
-                        <h2 className="text-base font-medium text-muted-foreground">Plan Details</h2>
-                        <div className="grid gap-4 sm:grid-cols-2">
-                            <div className="space-y-2">
-                                <Label>Participant *</Label>
-                                <Select
-                                    value={data.participant_id}
-                                    onValueChange={(v) => setData('participant_id', v)}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select participant" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {participants.data.map((p) => (
-                                            <SelectItem key={p.id} value={p.id}>
-                                                {p.full_name} — {p.ndis_number}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <InputError message={errors.participant_id} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="plan_number">Plan Number</Label>
-                                <Input
-                                    id="plan_number"
-                                    value={data.plan_number}
-                                    onChange={(e) => setData('plan_number', e.target.value)}
-                                />
-                                <InputError message={errors.plan_number} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="plan_start_date">Plan Start Date</Label>
-                                <Input
-                                    id="plan_start_date"
-                                    type="date"
-                                    value={data.plan_start_date}
-                                    onChange={(e) => setData('plan_start_date', e.target.value)}
-                                />
-                                <InputError message={errors.plan_start_date} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="plan_end_date">Plan End Date</Label>
-                                <Input
-                                    id="plan_end_date"
-                                    type="date"
-                                    value={data.plan_end_date}
-                                    onChange={(e) => setData('plan_end_date', e.target.value)}
-                                />
-                                <InputError message={errors.plan_end_date} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Management Type *</Label>
-                                <Select
-                                    value={data.management_type}
-                                    onValueChange={(v) => setData('management_type', v)}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="agency_managed">Agency Managed</SelectItem>
-                                        <SelectItem value="plan_managed">Plan Managed</SelectItem>
-                                        <SelectItem value="self_managed">Self Managed</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <InputError message={errors.management_type} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Status *</Label>
-                                <Select value={data.status} onValueChange={(v) => setData('status', v)}>
-                                    <SelectTrigger>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="active">Active</SelectItem>
-                                        <SelectItem value="pending">Pending</SelectItem>
-                                        <SelectItem value="expired">Expired</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <InputError message={errors.status} />
-                            </div>
-                        </div>
-                    </div>
+                    <FormSection title="Plan">
+                        <FormField label="Participant" error={errors.participant_id} required full>
+                            <Select
+                                value={data.participant_id}
+                                onValueChange={(v) => setData('participant_id', v)}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select participant" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {participants.data.map((p) => (
+                                        <SelectItem key={p.id} value={p.id}>
+                                            {p.full_name} — {p.ndis_number}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </FormField>
+                        <FormField label="Plan Number" htmlFor="plan_number" error={errors.plan_number}>
+                            <Input
+                                id="plan_number"
+                                value={data.plan_number}
+                                onChange={(e) => setData('plan_number', e.target.value)}
+                            />
+                        </FormField>
+                        <FormField label="Plan Start Date" htmlFor="plan_start_date" error={errors.plan_start_date}>
+                            <Input
+                                id="plan_start_date"
+                                type="date"
+                                value={data.plan_start_date}
+                                onChange={(e) => setData('plan_start_date', e.target.value)}
+                            />
+                        </FormField>
+                        <FormField label="Plan End Date" htmlFor="plan_end_date" error={errors.plan_end_date}>
+                            <Input
+                                id="plan_end_date"
+                                type="date"
+                                value={data.plan_end_date}
+                                onChange={(e) => setData('plan_end_date', e.target.value)}
+                            />
+                        </FormField>
+                        <FormField label="Management Type" error={errors.management_type} required>
+                            <Select
+                                value={data.management_type}
+                                onValueChange={(v) => setData('management_type', v)}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="agency_managed">Agency Managed</SelectItem>
+                                    <SelectItem value="plan_managed">Plan Managed</SelectItem>
+                                    <SelectItem value="self_managed">Self Managed</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </FormField>
+                        <FormField label="Status" error={errors.status} required>
+                            <Select value={data.status} onValueChange={(v) => setData('status', v)}>
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="active">Active</SelectItem>
+                                    <SelectItem value="pending">Pending</SelectItem>
+                                    <SelectItem value="expired">Expired</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </FormField>
+                    </FormSection>
 
-                    {/* Funding Amounts */}
-                    <div className="space-y-4">
-                        <h2 className="text-base font-medium text-muted-foreground">Funding Amounts</h2>
-                        <div className="grid gap-4 sm:grid-cols-2">
-                            <div className="space-y-2">
-                                <Label htmlFor="core_total">Core Total ($)</Label>
-                                <Input
-                                    id="core_total"
-                                    type="number"
-                                    step="0.01"
-                                    value={data.core_total}
-                                    onChange={(e) => setData('core_total', e.target.value)}
-                                />
-                                <InputError message={errors.core_total} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="capacity_total">Capacity Building Total ($)</Label>
-                                <Input
-                                    id="capacity_total"
-                                    type="number"
-                                    step="0.01"
-                                    value={data.capacity_total}
-                                    onChange={(e) => setData('capacity_total', e.target.value)}
-                                />
-                                <InputError message={errors.capacity_total} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="capital_total">Capital Total ($)</Label>
-                                <Input
-                                    id="capital_total"
-                                    type="number"
-                                    step="0.01"
-                                    value={data.capital_total}
-                                    onChange={(e) => setData('capital_total', e.target.value)}
-                                />
-                                <InputError message={errors.capital_total} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="total_funding">Total Funding ($)</Label>
-                                <Input
-                                    id="total_funding"
-                                    type="number"
-                                    step="0.01"
-                                    value={data.total_funding}
-                                    onChange={(e) => setData('total_funding', e.target.value)}
-                                />
-                                <InputError message={errors.total_funding} />
-                            </div>
-                        </div>
-                    </div>
+                    <FormSection title="Funding">
+                        <FormField label="Core Total ($)" htmlFor="core_total" error={errors.core_total}>
+                            <Input
+                                id="core_total"
+                                type="number"
+                                step="0.01"
+                                value={data.core_total}
+                                onChange={(e) => setData('core_total', e.target.value)}
+                            />
+                        </FormField>
+                        <FormField label="Capacity Building Total ($)" htmlFor="capacity_total" error={errors.capacity_total}>
+                            <Input
+                                id="capacity_total"
+                                type="number"
+                                step="0.01"
+                                value={data.capacity_total}
+                                onChange={(e) => setData('capacity_total', e.target.value)}
+                            />
+                        </FormField>
+                        <FormField label="Capital Total ($)" htmlFor="capital_total" error={errors.capital_total}>
+                            <Input
+                                id="capital_total"
+                                type="number"
+                                step="0.01"
+                                value={data.capital_total}
+                                onChange={(e) => setData('capital_total', e.target.value)}
+                            />
+                        </FormField>
+                        <FormField label="Total Funding ($)" htmlFor="total_funding" error={errors.total_funding}>
+                            <Input
+                                id="total_funding"
+                                type="number"
+                                step="0.01"
+                                value={data.total_funding}
+                                onChange={(e) => setData('total_funding', e.target.value)}
+                            />
+                        </FormField>
+                    </FormSection>
 
-                    {/* NDIA Contact */}
-                    <div className="space-y-4">
-                        <h2 className="text-base font-medium text-muted-foreground">NDIA Contact</h2>
-                        <div className="grid gap-4 sm:grid-cols-2">
-                            <div className="space-y-2">
-                                <Label htmlFor="ndia_contact_name">Contact Name</Label>
-                                <Input
-                                    id="ndia_contact_name"
-                                    value={data.ndia_contact_name}
-                                    onChange={(e) => setData('ndia_contact_name', e.target.value)}
-                                />
-                                <InputError message={errors.ndia_contact_name} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="ndia_contact_phone">Contact Phone</Label>
-                                <Input
-                                    id="ndia_contact_phone"
-                                    value={data.ndia_contact_phone}
-                                    onChange={(e) => setData('ndia_contact_phone', e.target.value)}
-                                />
-                                <InputError message={errors.ndia_contact_phone} />
-                            </div>
-                        </div>
-                    </div>
+                    <FormSection title="NDIA Contact">
+                        <FormField label="Contact Name" htmlFor="ndia_contact_name" error={errors.ndia_contact_name}>
+                            <Input
+                                id="ndia_contact_name"
+                                value={data.ndia_contact_name}
+                                onChange={(e) => setData('ndia_contact_name', e.target.value)}
+                            />
+                        </FormField>
+                        <FormField label="Contact Phone" htmlFor="ndia_contact_phone" error={errors.ndia_contact_phone}>
+                            <Input
+                                id="ndia_contact_phone"
+                                value={data.ndia_contact_phone}
+                                onChange={(e) => setData('ndia_contact_phone', e.target.value)}
+                            />
+                        </FormField>
+                    </FormSection>
 
-                    <div className="flex gap-3 pt-2">
-                        <Button type="submit" disabled={processing}>
-                            Add Plan
-                        </Button>
+                    <FormActions>
                         <Button type="button" variant="outline" onClick={() => history.back()}>
                             Cancel
                         </Button>
-                    </div>
+                        <Button type="submit" disabled={processing}>
+                            Add Plan
+                        </Button>
+                    </FormActions>
                 </form>
             </div>
         </>

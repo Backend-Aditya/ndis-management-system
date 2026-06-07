@@ -3,8 +3,10 @@ import { Plus, Trash2 } from 'lucide-react';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { FormSection } from '@/components/form/form-section';
+import { FormField } from '@/components/form/form-field';
+import { FormActions } from '@/components/form/form-actions';
 import InputError from '@/components/input-error';
 import type { NdisPlan, Participant, ServiceType } from '@/types/models';
 
@@ -74,69 +76,57 @@ export default function InvoicesCreate({ participants, plans, serviceTypes }: Pr
                     }}
                     className="space-y-6"
                 >
-                    {/* Invoice Details */}
-                    <div className="space-y-4">
-                        <h2 className="text-base font-medium text-muted-foreground">Invoice Details</h2>
-                        <div className="grid gap-4 sm:grid-cols-2">
-                            <div className="space-y-2">
-                                <Label>Participant *</Label>
-                                <Select value={data.participant_id} onValueChange={(v) => setData('participant_id', v)}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select participant" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {participants.data.map((p) => (
-                                            <SelectItem key={p.id} value={p.id}>
-                                                {p.full_name} — {p.ndis_number}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <InputError message={errors.participant_id} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Plan *</Label>
-                                <Select value={data.plan_id} onValueChange={(v) => setData('plan_id', v)}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select plan" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {plans.data.map((p) => (
-                                            <SelectItem key={p.id} value={p.id}>
-                                                {p.plan_number ?? p.id}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <InputError message={errors.plan_id} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="invoice_date">Invoice Date</Label>
-                                <Input
-                                    id="invoice_date"
-                                    type="date"
-                                    value={data.invoice_date}
-                                    onChange={(e) => setData('invoice_date', e.target.value)}
-                                />
-                                <InputError message={errors.invoice_date} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="due_date">Due Date</Label>
-                                <Input
-                                    id="due_date"
-                                    type="date"
-                                    value={data.due_date}
-                                    onChange={(e) => setData('due_date', e.target.value)}
-                                />
-                                <InputError message={errors.due_date} />
-                            </div>
-                        </div>
-                    </div>
+                    <FormSection title="Invoice">
+                        <FormField label="Participant" error={errors.participant_id} required>
+                            <Select value={data.participant_id} onValueChange={(v) => setData('participant_id', v)}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select participant" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {participants.data.map((p) => (
+                                        <SelectItem key={p.id} value={p.id}>
+                                            {p.full_name} — {p.ndis_number}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </FormField>
+                        <FormField label="Plan" error={errors.plan_id} required>
+                            <Select value={data.plan_id} onValueChange={(v) => setData('plan_id', v)}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select plan" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {plans.data.map((p) => (
+                                        <SelectItem key={p.id} value={p.id}>
+                                            {p.plan_number ?? p.id}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </FormField>
+                        <FormField label="Invoice Date" htmlFor="invoice_date" error={errors.invoice_date}>
+                            <Input
+                                id="invoice_date"
+                                type="date"
+                                value={data.invoice_date}
+                                onChange={(e) => setData('invoice_date', e.target.value)}
+                            />
+                        </FormField>
+                        <FormField label="Due Date" htmlFor="due_date" error={errors.due_date}>
+                            <Input
+                                id="due_date"
+                                type="date"
+                                value={data.due_date}
+                                onChange={(e) => setData('due_date', e.target.value)}
+                            />
+                        </FormField>
+                    </FormSection>
 
                     {/* Line Items */}
-                    <div className="space-y-4">
+                    <div className="space-y-4 rounded-lg border bg-card p-6">
                         <div className="flex items-center justify-between">
-                            <h2 className="text-base font-medium text-muted-foreground">Line Items</h2>
+                            <h2 className="text-base font-semibold">Line Items</h2>
                             <Button type="button" variant="outline" size="sm" onClick={addLineItem}>
                                 <Plus className="mr-1 size-4" />
                                 Add Line Item
@@ -158,7 +148,6 @@ export default function InvoicesCreate({ participants, plans, serviceTypes }: Pr
                                     )}
                                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                                         <div className="space-y-2">
-                                            <Label>Service Type *</Label>
                                             <Select
                                                 value={item.service_type_id}
                                                 onValueChange={(v) => updateLineItem(index, 'service_type_id', v)}
@@ -177,7 +166,6 @@ export default function InvoicesCreate({ participants, plans, serviceTypes }: Pr
                                             <InputError message={(errors as Record<string, string>)[`line_items.${index}.service_type_id`]} />
                                         </div>
                                         <div className="space-y-2 lg:col-span-2">
-                                            <Label>Description *</Label>
                                             <Input
                                                 value={item.description}
                                                 onChange={(e) => updateLineItem(index, 'description', e.target.value)}
@@ -186,7 +174,6 @@ export default function InvoicesCreate({ participants, plans, serviceTypes }: Pr
                                             <InputError message={(errors as Record<string, string>)[`line_items.${index}.description`]} />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label>Service Date</Label>
                                             <Input
                                                 type="date"
                                                 value={item.service_date}
@@ -195,24 +182,22 @@ export default function InvoicesCreate({ participants, plans, serviceTypes }: Pr
                                             <InputError message={(errors as Record<string, string>)[`line_items.${index}.service_date`]} />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label>Quantity *</Label>
                                             <Input
                                                 type="number"
                                                 step="0.01"
                                                 value={item.quantity}
                                                 onChange={(e) => updateLineItem(index, 'quantity', e.target.value)}
-                                                placeholder="0.00"
+                                                placeholder="Qty"
                                             />
                                             <InputError message={(errors as Record<string, string>)[`line_items.${index}.quantity`]} />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label>Unit Price ($) *</Label>
                                             <Input
                                                 type="number"
                                                 step="0.01"
                                                 value={item.unit_price}
                                                 onChange={(e) => updateLineItem(index, 'unit_price', e.target.value)}
-                                                placeholder="0.00"
+                                                placeholder="Unit price ($)"
                                             />
                                             <InputError message={(errors as Record<string, string>)[`line_items.${index}.unit_price`]} />
                                         </div>
@@ -244,14 +229,14 @@ export default function InvoicesCreate({ participants, plans, serviceTypes }: Pr
                         </div>
                     </div>
 
-                    <div className="flex gap-3 pt-2">
-                        <Button type="submit" disabled={processing}>
-                            Create Invoice
-                        </Button>
+                    <FormActions>
                         <Button type="button" variant="outline" onClick={() => history.back()}>
                             Cancel
                         </Button>
-                    </div>
+                        <Button type="submit" disabled={processing}>
+                            Create Invoice
+                        </Button>
+                    </FormActions>
                 </form>
             </div>
         </>

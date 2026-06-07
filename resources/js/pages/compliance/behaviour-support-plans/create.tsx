@@ -5,7 +5,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import InputError from '@/components/input-error';
+import { FormSection } from '@/components/form/form-section';
+import { FormField } from '@/components/form/form-field';
+import { FormActions } from '@/components/form/form-actions';
 import type { Participant } from '@/types/models';
 
 interface Props {
@@ -36,94 +38,50 @@ export default function BehaviourSupportPlansCreate({ participants }: Props) {
                     }}
                     className="space-y-6"
                 >
-                    {/* Plan Details */}
-                    <div className="space-y-4">
-                        <h2 className="text-base font-medium text-muted-foreground">Plan Details</h2>
-                        <div className="grid gap-4 sm:grid-cols-2">
-                            <div className="space-y-2">
-                                <Label>Participant *</Label>
-                                <Select value={data.participant_id} onValueChange={(v) => setData('participant_id', v)}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select participant" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {participants.data.map((p) => (
-                                            <SelectItem key={p.id} value={p.id}>
-                                                {p.full_name}
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                                <InputError message={errors.participant_id} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>Status</Label>
-                                <Select value={data.status} onValueChange={(v) => setData('status', v)}>
-                                    <SelectTrigger>
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="active">Active</SelectItem>
-                                        <SelectItem value="under_review">Under Review</SelectItem>
-                                        <SelectItem value="expired">Expired</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <InputError message={errors.status} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="plan_date">Plan Date</Label>
-                                <Input
-                                    id="plan_date"
-                                    type="date"
-                                    value={data.plan_date}
-                                    onChange={(e) => setData('plan_date', e.target.value)}
-                                />
-                                <InputError message={errors.plan_date} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="review_date">Review Date</Label>
-                                <Input
-                                    id="review_date"
-                                    type="date"
-                                    value={data.review_date}
-                                    onChange={(e) => setData('review_date', e.target.value)}
-                                />
-                                <InputError message={errors.review_date} />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Behaviour Details */}
-                    <div className="space-y-4">
-                        <h2 className="text-base font-medium text-muted-foreground">Behaviour Details</h2>
-                        <div className="space-y-2">
-                            <Label htmlFor="triggers">Triggers</Label>
-                            <textarea
-                                id="triggers"
-                                className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
-                                rows={3}
-                                value={data.triggers}
-                                onChange={(e) => setData('triggers', e.target.value)}
+                    <FormSection title="Plan">
+                        <FormField label="Participant" error={errors.participant_id} required>
+                            <Select value={data.participant_id} onValueChange={(v) => setData('participant_id', v)}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select participant" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {participants.data.map((p) => (
+                                        <SelectItem key={p.id} value={p.id}>
+                                            {p.full_name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </FormField>
+                        <FormField label="Status" error={errors.status}>
+                            <Select value={data.status} onValueChange={(v) => setData('status', v)}>
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="active">Active</SelectItem>
+                                    <SelectItem value="under_review">Under Review</SelectItem>
+                                    <SelectItem value="expired">Expired</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </FormField>
+                        <FormField label="Plan Date" htmlFor="plan_date" error={errors.plan_date}>
+                            <Input
+                                id="plan_date"
+                                type="date"
+                                value={data.plan_date}
+                                onChange={(e) => setData('plan_date', e.target.value)}
                             />
-                            <InputError message={errors.triggers} />
-                        </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="strategies">Strategies</Label>
-                            <textarea
-                                id="strategies"
-                                className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
-                                rows={4}
-                                value={data.strategies}
-                                onChange={(e) => setData('strategies', e.target.value)}
+                        </FormField>
+                        <FormField label="Review Date" htmlFor="review_date" error={errors.review_date}>
+                            <Input
+                                id="review_date"
+                                type="date"
+                                value={data.review_date}
+                                onChange={(e) => setData('review_date', e.target.value)}
                             />
-                            <InputError message={errors.strategies} />
-                        </div>
-                    </div>
-
-                    {/* Restrictive Practices */}
-                    <div className="space-y-4">
-                        <h2 className="text-base font-medium text-muted-foreground">Restrictive Practices</h2>
-                        <div className="flex items-center gap-2">
+                        </FormField>
+                        <div className="flex items-center gap-2 sm:col-span-2">
                             <Checkbox
                                 id="uses_restrictive_practices"
                                 checked={data.uses_restrictive_practices}
@@ -131,26 +89,43 @@ export default function BehaviourSupportPlansCreate({ participants }: Props) {
                             />
                             <Label htmlFor="uses_restrictive_practices">Uses restrictive practices</Label>
                         </div>
-                        <div className="space-y-2">
-                            <Label htmlFor="restrictive_practice_type">Restrictive Practice Type</Label>
+                        <FormField label="Restrictive Practice Type" htmlFor="restrictive_practice_type" error={errors.restrictive_practice_type}>
                             <Input
                                 id="restrictive_practice_type"
                                 value={data.restrictive_practice_type}
                                 onChange={(e) => setData('restrictive_practice_type', e.target.value)}
                                 placeholder="e.g. mechanical restraint"
                             />
-                            <InputError message={errors.restrictive_practice_type} />
-                        </div>
-                    </div>
+                        </FormField>
+                    </FormSection>
 
-                    <div className="flex gap-3 pt-2">
-                        <Button type="submit" disabled={processing}>
-                            Save Plan
-                        </Button>
+                    <FormSection title="Detail">
+                        <FormField label="Triggers" htmlFor="triggers" error={errors.triggers} full>
+                            <textarea
+                                id="triggers"
+                                className="border-input bg-background min-h-[90px] w-full rounded-md border px-3 py-2 text-sm"
+                                value={data.triggers}
+                                onChange={(e) => setData('triggers', e.target.value)}
+                            />
+                        </FormField>
+                        <FormField label="Strategies" htmlFor="strategies" error={errors.strategies} full>
+                            <textarea
+                                id="strategies"
+                                className="border-input bg-background min-h-[90px] w-full rounded-md border px-3 py-2 text-sm"
+                                value={data.strategies}
+                                onChange={(e) => setData('strategies', e.target.value)}
+                            />
+                        </FormField>
+                    </FormSection>
+
+                    <FormActions>
                         <Button type="button" variant="outline" onClick={() => history.back()}>
                             Cancel
                         </Button>
-                    </div>
+                        <Button type="submit" disabled={processing}>
+                            Save Plan
+                        </Button>
+                    </FormActions>
                 </form>
             </div>
         </>

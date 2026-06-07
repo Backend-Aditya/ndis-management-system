@@ -4,7 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import InputError from '@/components/input-error';
+import { FormSection } from '@/components/form/form-section';
+import { FormField } from '@/components/form/form-field';
+import { FormActions } from '@/components/form/form-actions';
 import type { ServiceType } from '@/types/models';
 
 export default function ServiceTypesEdit({ serviceType }: { serviceType: ServiceType }) {
@@ -33,129 +35,102 @@ export default function ServiceTypesEdit({ serviceType }: { serviceType: Service
                     }}
                     className="space-y-6"
                 >
-                    {/* Basic Details */}
-                    <div className="space-y-4">
-                        <h2 className="text-base font-medium text-muted-foreground">Service Details</h2>
-                        <div className="grid gap-4 sm:grid-cols-2">
-                            <div className="space-y-2">
-                                <Label htmlFor="ndis_support_item_number">NDIS Support Item Number</Label>
-                                <Input
-                                    id="ndis_support_item_number"
-                                    value={data.ndis_support_item_number}
-                                    onChange={(e) => setData('ndis_support_item_number', e.target.value)}
-                                />
-                                <InputError message={errors.ndis_support_item_number} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="name">Name *</Label>
-                                <Input
-                                    id="name"
-                                    value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
-                                />
-                                <InputError message={errors.name} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="support_category">Support Category</Label>
-                                <Input
-                                    id="support_category"
-                                    value={data.support_category}
-                                    onChange={(e) => setData('support_category', e.target.value)}
-                                />
-                                <InputError message={errors.support_category} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="unit_of_measure">Unit of Measure</Label>
-                                <Input
-                                    id="unit_of_measure"
-                                    value={data.unit_of_measure}
-                                    onChange={(e) => setData('unit_of_measure', e.target.value)}
-                                    placeholder="e.g. H, EA"
-                                />
-                                <InputError message={errors.unit_of_measure} />
-                            </div>
+                    <FormSection title="Service">
+                        <FormField label="Name" htmlFor="name" error={errors.name} required full>
+                            <Input
+                                id="name"
+                                value={data.name}
+                                onChange={(e) => setData('name', e.target.value)}
+                            />
+                        </FormField>
+                        <FormField label="NDIS Support Item Number" htmlFor="ndis_support_item_number" error={errors.ndis_support_item_number}>
+                            <Input
+                                id="ndis_support_item_number"
+                                value={data.ndis_support_item_number}
+                                onChange={(e) => setData('ndis_support_item_number', e.target.value)}
+                            />
+                        </FormField>
+                        <FormField label="Support Category" htmlFor="support_category" error={errors.support_category}>
+                            <Input
+                                id="support_category"
+                                value={data.support_category}
+                                onChange={(e) => setData('support_category', e.target.value)}
+                            />
+                        </FormField>
+                        <FormField label="Unit of Measure" htmlFor="unit_of_measure" error={errors.unit_of_measure}>
+                            <Input
+                                id="unit_of_measure"
+                                value={data.unit_of_measure}
+                                onChange={(e) => setData('unit_of_measure', e.target.value)}
+                                placeholder="e.g. H, EA"
+                            />
+                        </FormField>
+                        <div className="flex items-center gap-2 sm:col-span-2">
+                            <Checkbox
+                                id="is_active"
+                                checked={data.is_active}
+                                onCheckedChange={(v) => setData('is_active', Boolean(v))}
+                            />
+                            <Label htmlFor="is_active">Active</Label>
                         </div>
-                    </div>
+                    </FormSection>
 
-                    {/* Rates */}
-                    <div className="space-y-4">
-                        <h2 className="text-base font-medium text-muted-foreground">Rates</h2>
-                        <div className="grid gap-4 sm:grid-cols-2">
-                            <div className="space-y-2">
-                                <Label htmlFor="standard_rate">Standard Rate ($) *</Label>
-                                <Input
-                                    id="standard_rate"
-                                    type="number"
-                                    step="0.01"
-                                    value={data.standard_rate}
-                                    onChange={(e) => setData('standard_rate', e.target.value)}
-                                />
-                                <InputError message={errors.standard_rate} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="weeknight_rate">Weeknight Rate ($)</Label>
-                                <Input
-                                    id="weeknight_rate"
-                                    type="number"
-                                    step="0.01"
-                                    value={data.weeknight_rate}
-                                    onChange={(e) => setData('weeknight_rate', e.target.value)}
-                                />
-                                <InputError message={errors.weeknight_rate} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="saturday_rate">Saturday Rate ($)</Label>
-                                <Input
-                                    id="saturday_rate"
-                                    type="number"
-                                    step="0.01"
-                                    value={data.saturday_rate}
-                                    onChange={(e) => setData('saturday_rate', e.target.value)}
-                                />
-                                <InputError message={errors.saturday_rate} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="sunday_rate">Sunday Rate ($)</Label>
-                                <Input
-                                    id="sunday_rate"
-                                    type="number"
-                                    step="0.01"
-                                    value={data.sunday_rate}
-                                    onChange={(e) => setData('sunday_rate', e.target.value)}
-                                />
-                                <InputError message={errors.sunday_rate} />
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="public_holiday_rate">Public Holiday Rate ($)</Label>
-                                <Input
-                                    id="public_holiday_rate"
-                                    type="number"
-                                    step="0.01"
-                                    value={data.public_holiday_rate}
-                                    onChange={(e) => setData('public_holiday_rate', e.target.value)}
-                                />
-                                <InputError message={errors.public_holiday_rate} />
-                            </div>
-                        </div>
-                    </div>
+                    <FormSection title="Rates">
+                        <FormField label="Standard Rate ($)" htmlFor="standard_rate" error={errors.standard_rate} required>
+                            <Input
+                                id="standard_rate"
+                                type="number"
+                                step="0.01"
+                                value={data.standard_rate}
+                                onChange={(e) => setData('standard_rate', e.target.value)}
+                            />
+                        </FormField>
+                        <FormField label="Weeknight Rate ($)" htmlFor="weeknight_rate" error={errors.weeknight_rate}>
+                            <Input
+                                id="weeknight_rate"
+                                type="number"
+                                step="0.01"
+                                value={data.weeknight_rate}
+                                onChange={(e) => setData('weeknight_rate', e.target.value)}
+                            />
+                        </FormField>
+                        <FormField label="Saturday Rate ($)" htmlFor="saturday_rate" error={errors.saturday_rate}>
+                            <Input
+                                id="saturday_rate"
+                                type="number"
+                                step="0.01"
+                                value={data.saturday_rate}
+                                onChange={(e) => setData('saturday_rate', e.target.value)}
+                            />
+                        </FormField>
+                        <FormField label="Sunday Rate ($)" htmlFor="sunday_rate" error={errors.sunday_rate}>
+                            <Input
+                                id="sunday_rate"
+                                type="number"
+                                step="0.01"
+                                value={data.sunday_rate}
+                                onChange={(e) => setData('sunday_rate', e.target.value)}
+                            />
+                        </FormField>
+                        <FormField label="Public Holiday Rate ($)" htmlFor="public_holiday_rate" error={errors.public_holiday_rate}>
+                            <Input
+                                id="public_holiday_rate"
+                                type="number"
+                                step="0.01"
+                                value={data.public_holiday_rate}
+                                onChange={(e) => setData('public_holiday_rate', e.target.value)}
+                            />
+                        </FormField>
+                    </FormSection>
 
-                    <div className="flex items-center gap-2">
-                        <Checkbox
-                            id="is_active"
-                            checked={data.is_active}
-                            onCheckedChange={(v) => setData('is_active', Boolean(v))}
-                        />
-                        <Label htmlFor="is_active">Active</Label>
-                    </div>
-
-                    <div className="flex gap-3 pt-2">
-                        <Button type="submit" disabled={processing}>
-                            Save Changes
-                        </Button>
+                    <FormActions>
                         <Button type="button" variant="outline" onClick={() => history.back()}>
                             Cancel
                         </Button>
-                    </div>
+                        <Button type="submit" disabled={processing}>
+                            Save Changes
+                        </Button>
+                    </FormActions>
                 </form>
             </div>
         </>

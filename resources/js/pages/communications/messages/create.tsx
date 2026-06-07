@@ -2,10 +2,13 @@ import { Head, useForm } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { FormSection } from '@/components/form/form-section';
+import { FormField } from '@/components/form/form-field';
+import { FormActions } from '@/components/form/form-actions';
 import InputError from '@/components/input-error';
+import { Input } from '@/components/ui/input';
 import type { User } from '@/types/models';
 
 interface Props {
@@ -42,51 +45,54 @@ export default function MessagesCreate({ users }: Props) {
                     }}
                     className="space-y-6"
                 >
-                    {/* Subject */}
-                    <div className="space-y-2">
-                        <Label htmlFor="subject">Subject *</Label>
-                        <Input
-                            id="subject"
-                            value={data.subject}
-                            onChange={(e) => setData('subject', e.target.value)}
-                            placeholder="Message subject"
-                        />
-                        <InputError message={errors.subject} />
-                    </div>
-
-                    {/* Message Type */}
-                    <div className="space-y-2">
-                        <Label>Message Type *</Label>
-                        <Select
-                            value={data.message_type}
-                            onValueChange={(v) => setData('message_type', v as 'general' | 'urgent' | 'reminder')}
-                        >
-                            <SelectTrigger>
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="general">General</SelectItem>
-                                <SelectItem value="urgent">Urgent</SelectItem>
-                                <SelectItem value="reminder">Reminder</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <InputError message={errors.message_type} />
-                    </div>
-
-                    {/* Broadcast toggle */}
-                    <div className="flex items-center gap-2">
-                        <Checkbox
-                            id="is_broadcast"
-                            checked={data.is_broadcast}
-                            onCheckedChange={(v) => setData('is_broadcast', Boolean(v))}
-                        />
-                        <Label htmlFor="is_broadcast">Send to all staff</Label>
-                    </div>
+                    <FormSection title="Message">
+                        <FormField label="Subject" htmlFor="subject" error={errors.subject} required full>
+                            <Input
+                                id="subject"
+                                value={data.subject}
+                                onChange={(e) => setData('subject', e.target.value)}
+                                placeholder="Message subject"
+                            />
+                        </FormField>
+                        <FormField label="Message Type" error={errors.message_type} required>
+                            <Select
+                                value={data.message_type}
+                                onValueChange={(v) => setData('message_type', v as 'general' | 'urgent' | 'reminder')}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="general">General</SelectItem>
+                                    <SelectItem value="urgent">Urgent</SelectItem>
+                                    <SelectItem value="reminder">Reminder</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </FormField>
+                        <div className="flex items-center gap-2 sm:col-span-2">
+                            <Checkbox
+                                id="is_broadcast"
+                                checked={data.is_broadcast}
+                                onCheckedChange={(v) => setData('is_broadcast', Boolean(v))}
+                            />
+                            <Label htmlFor="is_broadcast">Send to all staff</Label>
+                        </div>
+                        <FormField label="Message" htmlFor="body" error={errors.body} required full>
+                            <textarea
+                                id="body"
+                                className="border-input bg-background min-h-[90px] w-full rounded-md border px-3 py-2 text-sm"
+                                rows={6}
+                                value={data.body}
+                                onChange={(e) => setData('body', e.target.value)}
+                                placeholder="Write your message here..."
+                            />
+                        </FormField>
+                    </FormSection>
 
                     {/* Recipients — shown only when not broadcast */}
                     {!data.is_broadcast && (
-                        <div className="space-y-2">
-                            <Label>Recipients *</Label>
+                        <div className="space-y-2 rounded-lg border bg-card p-6">
+                            <h2 className="text-base font-semibold">Recipients</h2>
                             <div className="max-h-56 space-y-2 overflow-y-auto rounded-md border p-3">
                                 {users.data.map((user) => (
                                     <div key={user.id} className="flex items-center gap-2">
@@ -105,28 +111,14 @@ export default function MessagesCreate({ users }: Props) {
                         </div>
                     )}
 
-                    {/* Body */}
-                    <div className="space-y-2">
-                        <Label htmlFor="body">Message *</Label>
-                        <textarea
-                            id="body"
-                            className="border-input bg-background w-full rounded-md border px-3 py-2 text-sm"
-                            rows={6}
-                            value={data.body}
-                            onChange={(e) => setData('body', e.target.value)}
-                            placeholder="Write your message here..."
-                        />
-                        <InputError message={errors.body} />
-                    </div>
-
-                    <div className="flex gap-3 pt-2">
-                        <Button type="submit" disabled={processing}>
-                            Send Message
-                        </Button>
+                    <FormActions>
                         <Button type="button" variant="outline" onClick={() => history.back()}>
                             Cancel
                         </Button>
-                    </div>
+                        <Button type="submit" disabled={processing}>
+                            Send Message
+                        </Button>
+                    </FormActions>
                 </form>
             </div>
         </>
