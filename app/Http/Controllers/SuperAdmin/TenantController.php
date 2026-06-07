@@ -52,16 +52,24 @@ class TenantController extends Controller
 
     public function edit(Tenant $tenant): Response
     {
+        $director = $tenant->users()->role('director')->first();
+
         return Inertia::render('super-admin/tenants/edit', [
             'tenant' => TenantResource::make($tenant)->resolve(),
+            'director' => $director ? [
+                'id' => $director->id,
+                'first_name' => $director->first_name,
+                'last_name' => $director->last_name,
+                'email' => $director->email,
+            ] : null,
         ]);
     }
 
     public function update(UpdateTenantRequest $request, Tenant $tenant): RedirectResponse
     {
-        $this->tenantService->update($tenant, $request->validated());
+        $this->tenantService->updateOrganisation($tenant, $request->validated());
 
-        return redirect()->route('super-admin.tenants.index')->with('success', 'Tenant updated.');
+        return redirect()->route('super-admin.tenants.index')->with('success', 'Organisation updated.');
     }
 
     public function destroy(Tenant $tenant): RedirectResponse

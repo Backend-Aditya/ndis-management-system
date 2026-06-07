@@ -33,15 +33,67 @@ it('superadmin can create a tenant', function () {
     $this->assertDatabaseHas('tenants', ['name' => 'New NDIS Org']);
 });
 
-it('superadmin can update tenant status', function () {
+it('superadmin can update tenant status and director login', function () {
     $tenant = Tenant::factory()->create(['status' => 'active']);
+    $director = User::factory()->forTenant($tenant)->create(['email' => 'old@org.com']);
+    $director->assignRole('director');
+
     $this->actingAs($this->admin)
         ->put("/super-admin/tenants/{$tenant->id}", [
             'name' => $tenant->name, 'contact_email' => $tenant->contact_email,
             'plan' => $tenant->plan, 'status' => 'suspended',
+            'director_first_name' => 'Updated', 'director_last_name' => 'Director',
+            'director_email' => 'new@org.com', 'director_password' => 'newpassword123',
         ])
         ->assertRedirect();
-    expect($tenant->fresh()->status)->toBe('suspended');
+
+    expect($tenant->fresh()->status)->toBe('suspended')
+        ->and($director->fresh()->email)->toBe('new@org.com')
+        ->and($director->fresh()->first_name)->toBe('Updated');
+});
+
+it('update creates a director when the organisation has none', function () {
+    $tenant = Tenant::factory()->create(['status' => 'active']);
+
+    $this->actingAs($this->admin)
+        ->put("/super-admin/tenants/{$tenant->id}", [
+            'name' => $tenant->name, 'contact_email' => $tenant->contact_email,
+            'plan' => $tenant->plan, 'status' => 'active',
+            'director_first_name' => 'Fresh', 'director_last_name' => 'Director',
+            'director_email' => 'fresh@org.com', 'director_password' => 'password123',
+        ])
+        ->assertRedirect();
+
+    $director = User::withoutGlobalScopes()->where('email', 'fresh@org.com')->first();
+    expect($director)->not->toBeNull()
+        ->and($director->tenant_id)->toBe($tenant->id)
+        ->and($director->hasRole('director'))->toBeTrue();
+});
+
+it('update without password fails when creating a missing director', function () {
+    $tenant = Tenant::factory()->create(['status' => 'active']);
+
+    $this->actingAs($this->admin)
+        ->put("/super-admin/tenants/{$tenant->id}", [
+            'name' => $tenant->name, 'contact_email' => $tenant->contact_email,
+            'plan' => $tenant->plan, 'status' => 'active',
+            'director_first_name' => 'Fresh', 'director_last_name' => 'Director',
+            'director_email' => 'fresh2@org.com', 'director_password' => '',
+        ])
+        ->assertSessionHasErrors('director_password');
+});
+
+it('edit page exposes the director account', function () {
+    $tenant = Tenant::factory()->create();
+    $director = User::factory()->forTenant($tenant)->create(['email' => 'dir@org.com']);
+    $director->assignRole('director');
+
+    $this->actingAs($this->admin)
+        ->get("/super-admin/tenants/{$tenant->id}/edit")
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->component('super-admin/tenants/edit')
+            ->where('director.email', 'dir@org.com'));
 });
 
 it('director cannot access super admin routes', function () {

@@ -4,12 +4,16 @@ namespace App\Providers;
 
 use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
+use App\Models\Tenant;
+use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
@@ -41,6 +45,34 @@ class FortifyServiceProvider extends ServiceProvider
     {
         Fortify::resetUserPasswordsUsing(ResetUserPassword::class);
         Fortify::createUsersUsing(CreateNewUser::class);
+
+        Fortify::authenticateUsing(function (Request $request) {
+            $user = User::withoutGlobalScopes()
+                ->where('email', $request->email)
+                ->first();
+
+            if (! $user || ! Hash::check($request->password, $user->password)) {
+                return null;
+            }
+
+            if (! $user->is_active) {
+                throw ValidationException::withMessages([
+                    Fortify::username() => __('This account has been deactivated.'),
+                ]);
+            }
+
+            if ($user->tenant_id) {
+                $tenant = Tenant::withoutGlobalScopes()->find($user->tenant_id);
+
+                if ($tenant && $tenant->status === 'suspended') {
+                    throw ValidationException::withMessages([
+                        Fortify::username() => __('This organisation is suspended. Contact your administrator.'),
+                    ]);
+                }
+            }
+
+            return $user;
+        });
     }
 
     /**

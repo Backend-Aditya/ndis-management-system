@@ -8,7 +8,14 @@ import { FormField } from '@/components/form/form-field';
 import { FormActions } from '@/components/form/form-actions';
 import type { Tenant } from '@/types/models';
 
-export default function TenantsEdit({ tenant }: { tenant: Tenant }) {
+interface Director {
+    id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+}
+
+export default function TenantsEdit({ tenant, director }: { tenant: Tenant; director: Director | null }) {
     const { data, setData, put, processing, errors } = useForm({
         name: tenant.name,
         contact_email: tenant.contact_email,
@@ -17,6 +24,10 @@ export default function TenantsEdit({ tenant }: { tenant: Tenant }) {
         status: tenant.status,
         abn: tenant.abn ?? '',
         ndis_provider_number: tenant.ndis_provider_number ?? '',
+        director_first_name: director?.first_name ?? '',
+        director_last_name: director?.last_name ?? '',
+        director_email: director?.email ?? '',
+        director_password: '',
     });
 
     return (
@@ -82,6 +93,58 @@ export default function TenantsEdit({ tenant }: { tenant: Tenant }) {
                                 id="ndis_provider_number"
                                 value={data.ndis_provider_number}
                                 onChange={(e) => setData('ndis_provider_number', e.target.value)}
+                            />
+                        </FormField>
+                    </FormSection>
+
+                    <FormSection
+                        title="Director Login"
+                        description={
+                            director
+                                ? "Credentials the organisation's director uses to sign in."
+                                : 'This organisation has no director yet. Fill these in to create one.'
+                        }
+                    >
+                        <FormField label="First Name" htmlFor="director_first_name" error={errors.director_first_name} required>
+                            <Input
+                                id="director_first_name"
+                                value={data.director_first_name}
+                                onChange={(e) => setData('director_first_name', e.target.value)}
+                            />
+                        </FormField>
+                        <FormField label="Last Name" htmlFor="director_last_name" error={errors.director_last_name} required>
+                            <Input
+                                id="director_last_name"
+                                value={data.director_last_name}
+                                onChange={(e) => setData('director_last_name', e.target.value)}
+                            />
+                        </FormField>
+                        <FormField label="Email" htmlFor="director_email" error={errors.director_email} required full>
+                            <Input
+                                id="director_email"
+                                type="email"
+                                value={data.director_email}
+                                onChange={(e) => setData('director_email', e.target.value)}
+                            />
+                        </FormField>
+                        <FormField
+                            label="Password"
+                            htmlFor="director_password"
+                            error={errors.director_password}
+                            required={!director}
+                            full
+                            hint={
+                                director
+                                    ? 'Leave blank to keep the current password.'
+                                    : 'Required to create the director account.'
+                            }
+                        >
+                            <Input
+                                id="director_password"
+                                type="password"
+                                value={data.director_password}
+                                onChange={(e) => setData('director_password', e.target.value)}
+                                placeholder="••••••••"
                             />
                         </FormField>
                     </FormSection>
